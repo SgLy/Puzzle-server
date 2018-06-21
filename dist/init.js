@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -34,59 +35,95 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-var crypto = require('crypto');
+exports.__esModule = true;
+var crypto = require("crypto");
 var sha256 = function (s) { return crypto.createHash('sha256').update(s).digest('hex'); };
+var mongodb_1 = require("mongodb");
+function createUser(db) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    console.log('Creating user');
+                    return [4 /*yield*/, db.createCollection('user', {
+                            validationLevel: 'strict',
+                            validationAction: 'error',
+                            validator: {
+                                $jsonSchema: {
+                                    bsonType: 'object',
+                                    required: ['username', 'password'],
+                                    properties: {
+                                        username: {
+                                            bsonType: 'string',
+                                            pattern: '[A-Za-z0-9-_]{3,20}'
+                                        },
+                                        password: {
+                                            bsonType: 'string',
+                                            pattern: '^[a-f0-9]{64}$'
+                                        },
+                                        nickname: {
+                                            bsonType: 'string'
+                                        },
+                                        token: {
+                                            bsonType: 'string',
+                                            pattern: '^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$'
+                                        }
+                                    }
+                                }
+                            }
+                        })];
+                case 1:
+                    _a.sent();
+                    return [4 /*yield*/, db.collection('user').createIndex({ username: 1 }, { unique: true })];
+                case 2:
+                    _a.sent();
+                    return [4 /*yield*/, db.collection('user').createIndex({ token: 2 }, { unique: true, sparse: true })];
+                case 3:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
 (function () { return __awaiter(_this, void 0, void 0, function () {
-    var mongo, db, dbName, url, client, err_1;
+    var dbName, url, client, db, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                mongo = require('mongodb').MongoClient;
                 dbName = 'puzzle';
                 url = 'mongodb://localhost:27017';
                 _a.label = 1;
             case 1:
-                _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, mongo.connect(url)];
+                _a.trys.push([1, 6, , 7]);
+                return [4 /*yield*/, mongodb_1.MongoClient.connect(url)];
             case 2:
                 client = _a.sent();
-                console.log('Connected to MongoDB');
                 db = client.db(dbName);
-                console.log('Creating user');
-                db.createCollection('user', {
-                    validator: {
-                        $jsonSchema: {
-                            bsonType: 'object',
-                            required: ['username', 'password'],
-                            properties: {
-                                username: {
-                                    bsonType: 'string',
-                                    pattern: 'A-Za-z0-9-_{3-20}'
-                                },
-                                password: {
-                                    bsonType: 'string',
-                                    pattern: '^A-F0-9]{64}$'
-                                },
-                                nickname: {
-                                    bsonType: 'string'
-                                }
-                            }
-                        }
-                    }
-                });
-                console.log('Insert default user');
-                db.collection('user').insertOne({
-                    username: 'test',
-                    password: sha256('test'),
-                    nickname: 'Just a test'
-                });
-                client.close();
-                return [3 /*break*/, 4];
+                console.log('Connected to MongoDB');
+                console.log('Droping existing');
+                return [4 /*yield*/, db.dropDatabase()];
             case 3:
+                _a.sent();
+                return [4 /*yield*/, Promise.all([
+                        createUser(db),
+                    ])];
+            case 4:
+                _a.sent();
+                console.log('Insert default user');
+                return [4 /*yield*/, db.collection('user').insertOne({
+                        username: 'test',
+                        password: sha256('test'),
+                        nickname: 'Just a test'
+                    })];
+            case 5:
+                _a.sent();
+                client.close();
+                return [3 /*break*/, 7];
+            case 6:
                 err_1 = _a.sent();
                 console.log(err_1.stack);
-                return [3 /*break*/, 4];
-            case 4:
+                return [3 /*break*/, 7];
+            case 7:
                 ;
                 return [2 /*return*/];
         }

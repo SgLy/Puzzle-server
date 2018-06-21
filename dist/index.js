@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     return new (P || (P = Promise))(function (resolve, reject) {
         function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
@@ -34,21 +35,29 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-var app = require('express')();
+exports.__esModule = true;
+var express = require("express");
+var app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 var cors = require('cors');
 app.use(cors({
     origin: 'http://localhost:3000',
     credentials: true,
     optionsSuccessStatus: 204
 }));
-var express = require('express');
 app.use(function (req, res, next) {
     console.log("[" + (new Date()).toISOString() + "] " + req.method + " " + req.originalUrl);
+    if (req.method === 'GET')
+        req['data'] = req.query;
+    else
+        req['data'] = req.body;
     next();
 });
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-app.io = io;
+var http = require("http");
+var server = new http.Server(app);
+var socketio = require("socket.io");
+var io = socketio(server);
 io.sockets.on('connection', function (socket) {
     console.log('socket connected');
     socket.emit('connected');
@@ -56,7 +65,7 @@ io.sockets.on('connection', function (socket) {
 app.get('/', function (req, res) {
     res.send('Puzzle app API');
 });
-var mongo = require('mongodb').MongoClient;
+var mongodb_1 = require("mongodb");
 var db;
 (function () { return __awaiter(_this, void 0, void 0, function () {
     var dbName, url, client, err_1, PORT;
@@ -68,7 +77,7 @@ var db;
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, mongo.connect(url)];
+                return [4 /*yield*/, mongodb_1.MongoClient.connect(url)];
             case 2:
                 client = _a.sent();
                 console.log('Connected to MongoDB');
@@ -87,3 +96,91 @@ var db;
         }
     });
 }); })();
+app.use(function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
+    var _a, _b;
+    return __generator(this, function (_c) {
+        switch (_c.label) {
+            case 0:
+                if (req.method === 'POST' && req.path === '/api/register') {
+                    next();
+                    return [2 /*return*/];
+                }
+                if (req.method === 'POST' && req.path === '/api/login') {
+                    next();
+                    return [2 /*return*/];
+                }
+                if (req['data'].token === undefined) {
+                    res.status(403).end();
+                    return [2 /*return*/];
+                }
+                _a = req;
+                _b = 'user';
+                return [4 /*yield*/, db.collection('user')
+                        .findOne({ token: req['data'].token })];
+            case 1:
+                _a[_b] = _c.sent();
+                next();
+                return [2 /*return*/];
+        }
+    });
+}); });
+app.get('/api/user', function (req, res) {
+    res.send(req['user']);
+});
+var uuid = require("uuid/v1");
+app.post('/api/login', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+    var _a, username, password, user, err_2;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _a = req['data'], username = _a.username, password = _a.password;
+                return [4 /*yield*/, db.collection('user').findOne({
+                        username: username, password: password
+                    })];
+            case 1:
+                user = _b.sent();
+                if (user === null) {
+                    res.json({ status: -1 });
+                    return [2 /*return*/];
+                }
+                user.token = uuid();
+                _b.label = 2;
+            case 2:
+                _b.trys.push([2, 4, , 5]);
+                return [4 /*yield*/, db.collection('user').findOneAndUpdate({ _id: user._id }, user)];
+            case 3:
+                _b.sent();
+                res.json({ status: 1, token: user.token });
+                return [3 /*break*/, 5];
+            case 4:
+                err_2 = _b.sent();
+                console.log(err_2.errmsg);
+                res.json({ status: -1 });
+                return [3 /*break*/, 5];
+            case 5: return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/api/register', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+    var _a, username, password, nickname, r, err_3;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                _a = req['data'], username = _a.username, password = _a.password, nickname = _a.nickname;
+                return [4 /*yield*/, db.collection('user').insertOne({
+                        username: username, password: password, nickname: nickname
+                    })];
+            case 1:
+                r = _b.sent();
+                res.json({ status: r.result.ok });
+                return [3 /*break*/, 3];
+            case 2:
+                err_3 = _b.sent();
+                console.log(err_3.errmsg);
+                res.json({ status: -1 });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
