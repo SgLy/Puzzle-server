@@ -34,35 +34,14 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-var app = require('express')();
-var cors = require('cors');
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-    optionsSuccessStatus: 204
-}));
-var express = require('express');
-app.use(function (req, res, next) {
-    console.log("[" + (new Date()).toISOString() + "] " + req.method + " " + req.originalUrl);
-    next();
-});
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-app.io = io;
-io.sockets.on('connection', function (socket) {
-    console.log('socket connected');
-    socket.emit('connected');
-});
-app.get('/', function (req, res) {
-    res.send('Puzzle app API');
-});
-var mongo = require('mongodb').MongoClient;
-var db;
+var crypto = require('crypto');
+var sha256 = function (s) { return crypto.createHash('sha256').update(s).digest('hex'); };
 (function () { return __awaiter(_this, void 0, void 0, function () {
-    var dbName, url, client, err_1, PORT;
+    var mongo, db, dbName, url, client, err_1;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
+                mongo = require('mongodb').MongoClient;
                 dbName = 'puzzle';
                 url = 'mongodb://localhost:27017';
                 _a.label = 1;
@@ -73,17 +52,45 @@ var db;
                 client = _a.sent();
                 console.log('Connected to MongoDB');
                 db = client.db(dbName);
+                console.log('Creating user');
+                db.createCollection('user', {
+                    validator: {
+                        $jsonSchema: {
+                            bsonType: 'object',
+                            required: ['username', 'password'],
+                            properties: {
+                                username: {
+                                    bsonType: 'string',
+                                    pattern: 'A-Za-z0-9-_{3-20}'
+                                },
+                                password: {
+                                    bsonType: 'string',
+                                    pattern: '^A-F0-9]{64}$'
+                                },
+                                nickname: {
+                                    bsonType: 'string'
+                                }
+                            }
+                        }
+                    }
+                });
+                console.log('Insert default user');
+                db.collection('user').insertOne({
+                    username: 'test',
+                    password: sha256('test'),
+                    nickname: 'Just a test'
+                });
+                client.close();
                 return [3 /*break*/, 4];
             case 3:
                 err_1 = _a.sent();
                 console.log(err_1.stack);
                 return [3 /*break*/, 4];
             case 4:
-                PORT = 5000;
-                server.listen(PORT, function () {
-                    console.log("Listening " + PORT);
-                });
+                ;
                 return [2 /*return*/];
         }
     });
-}); })();
+}); })().then(function () {
+    console.log('Done');
+});

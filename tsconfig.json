@@ -3,6 +3,9 @@
         "target": "es3",
         "module": "es6",
         "rootDir": "src",
-        "outDir": "dist"
+        "outDir": "dist",
+        "lib": [
+            "es2015"
+        ]
     }
 }
