@@ -94,7 +94,9 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   try {
-    const { username, password, nickname } = req['data'];
+    let { username, password, nickname } = req['data'];
+    // if (nickname === undefined)
+    //   nickname = null;  
     const r = await db.collection('user').insertOne({
       username, password, nickname
     });

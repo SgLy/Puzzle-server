@@ -21,25 +21,27 @@ async function createUser(db) {
             pattern: '^[a-f0-9]{64}$'
           },
           nickname: {
-            bsonType: 'string'
+            bsonType: ['string', 'null']
           },
           token: {
-            bsonType: 'string',
+            bsonType: ['string', 'null'],
             pattern: '^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$'
           }
         }
       }
     }
   });
-  await db.collection('user').createIndex({ username: 1 }, { unique: true });
-  await db.collection('user').createIndex({ token: 2 }, { unique: true, sparse: true });
+  await db.collection('user')
+    .createIndex({ username: 1 }, { unique: true });
+  await db.collection('user')
+    .createIndex({ token: 2 }, { unique: true, sparse: true });
 }
 
 (async () => {
   const dbName = 'puzzle';
   const url = 'mongodb://localhost:27017';
   try {
-    let client = await MongoClient.connect(url);
+    let client = await MongoClient.connect(url); 
     let db = client.db(dbName);
     console.log('Connected to MongoDB');
     

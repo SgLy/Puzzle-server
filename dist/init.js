@@ -62,10 +62,10 @@ function createUser(db) {
                                             pattern: '^[a-f0-9]{64}$'
                                         },
                                         nickname: {
-                                            bsonType: 'string'
+                                            bsonType: ['string', 'null']
                                         },
                                         token: {
-                                            bsonType: 'string',
+                                            bsonType: ['string', 'null'],
                                             pattern: '^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$'
                                         }
                                     }
@@ -74,10 +74,12 @@ function createUser(db) {
                         })];
                 case 1:
                     _a.sent();
-                    return [4 /*yield*/, db.collection('user').createIndex({ username: 1 }, { unique: true })];
+                    return [4 /*yield*/, db.collection('user')
+                            .createIndex({ username: 1 }, { unique: true })];
                 case 2:
                     _a.sent();
-                    return [4 /*yield*/, db.collection('user').createIndex({ token: 2 }, { unique: true, sparse: true })];
+                    return [4 /*yield*/, db.collection('user')
+                            .createIndex({ token: 2 }, { unique: true, sparse: true })];
                 case 3:
                     _a.sent();
                     return [2 /*return*/];
