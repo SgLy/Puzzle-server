@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "init": "node dist/init.js"
+    "start": "node-dev dist/index.js",
+    "init": "node-dev dist/init.js"
   },
   "repository": {
     "type": "git",

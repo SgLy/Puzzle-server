@@ -61,11 +61,15 @@ var io = socketio(server);
 io.sockets.on('connection', function (socket) {
     console.log('socket connected');
     socket.emit('connected');
+    socket.on('test', function (data) {
+        console.log(data);
+    });
 });
 app.get('/', function (req, res) {
     res.send('Puzzle app API');
 });
 var mongodb_1 = require("mongodb");
+var SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 var db;
 (function () { return __awaiter(_this, void 0, void 0, function () {
     var dbName, url, client, err_1, PORT;
@@ -178,6 +182,82 @@ app.post('/api/register', function (req, res) { return __awaiter(_this, void 0, 
             case 2:
                 err_3 = _b.sent();
                 console.log(err_3.errmsg);
+                res.json({ status: -1 });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+app.post('/api/result', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+    var _a, pattern, time, date, r, err_4;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
+            case 0:
+                _b.trys.push([0, 2, , 3]);
+                _a = req['data'], pattern = _a.pattern, time = _a.time, date = _a.date;
+                date = parseInt(date);
+                if (date < 1e12)
+                    date *= 1e3;
+                return [4 /*yield*/, db.collection('result').insertOne({
+                        pattern: pattern, time: time,
+                        date: new Date(date),
+                        username: req['user'].username
+                    })];
+            case 1:
+                r = _b.sent();
+                res.json({ status: r.result.ok });
+                return [3 /*break*/, 3];
+            case 2:
+                err_4 = _b.sent();
+                console.log(err_4.errmsg);
+                res.json({ status: -1 });
+                return [3 /*break*/, 3];
+            case 3: return [2 /*return*/];
+        }
+    });
+}); });
+app.get('/api/rank/:pattern', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+    var result_1, rec, err_5;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                _a.trys.push([0, 2, , 3]);
+                result_1 = [];
+                return [4 /*yield*/, db.collection('result').aggregate([{
+                            $lookup: {
+                                from: 'user',
+                                localField: 'username',
+                                foreignField: 'username',
+                                as: 'user'
+                            }
+                        }, {
+                            $match: {
+                                pattern: parseInt(req.params.pattern)
+                            }
+                        }]).sort({ time: SORT_ASCENDING }).limit(10)];
+            case 1:
+                rec = _a.sent();
+                rec.each(function (err, r) {
+                    if (err)
+                        throw (err);
+                    if (r === null) {
+                        res.json({
+                            status: 1,
+                            rank: result_1
+                        });
+                        return;
+                    }
+                    result_1.push({
+                        time: r.time,
+                        username: r.username,
+                        date: r.date,
+                        nickname: r.user[0].nickname
+                    });
+                });
+                return [3 /*break*/, 3];
+            case 2:
+                err_5 = _a.sent();
+                console.log(err_5.errmsg);
                 res.json({ status: -1 });
                 return [3 /*break*/, 3];
             case 3: return [2 /*return*/];

@@ -35,6 +35,35 @@ async function createUser(db) {
     .createIndex({ username: 1 }, { unique: true });
   await db.collection('user')
     .createIndex({ token: 2 }, { unique: true, sparse: true });
+  console.log('Insert default user');
+  await db.collection('user').insertOne({
+    username: 'test',
+    password: sha256('test'),
+    nickname: 'Just a test'
+  });
+}
+
+async function createResult(db) {
+  console.log('Creating result');
+  await db.createCollection('result', {
+    validationLevel: 'strict',
+    validationAction: 'error',
+    validator: {
+      $jsonSchema: {
+        bsonType: 'object',
+        required: ['username', 'pattern', 'time', 'date'],
+        properties: {
+          username: {
+            bsonType: 'string',
+            pattern: '[A-Za-z0-9-_]{3,20}'
+          },
+          pattern: { bsonType: 'int' },
+          time: { bsonType: 'int' },
+          date: { bsonType: 'date' }
+        }
+      }
+    }
+  });
 }
 
 (async () => {
@@ -50,15 +79,10 @@ async function createUser(db) {
     
     await Promise.all([
       createUser(db),
+      createResult(db)
     ]);
     
-    console.log('Insert default user');
-    await db.collection('user').insertOne({
-      username: 'test',
-      password: sha256('test'),
-      nickname: 'Just a test'
-    });
-    client.close();
+    await client.close();
   } catch (err) {
     console.log(err.stack);
   };

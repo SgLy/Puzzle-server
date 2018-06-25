@@ -82,6 +82,46 @@ function createUser(db) {
                             .createIndex({ token: 2 }, { unique: true, sparse: true })];
                 case 3:
                     _a.sent();
+                    console.log('Insert default user');
+                    return [4 /*yield*/, db.collection('user').insertOne({
+                            username: 'test',
+                            password: sha256('test'),
+                            nickname: 'Just a test'
+                        })];
+                case 4:
+                    _a.sent();
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+function createResult(db) {
+    return __awaiter(this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    console.log('Creating result');
+                    return [4 /*yield*/, db.createCollection('result', {
+                            validationLevel: 'strict',
+                            validationAction: 'error',
+                            validator: {
+                                $jsonSchema: {
+                                    bsonType: 'object',
+                                    required: ['username', 'pattern', 'time', 'date'],
+                                    properties: {
+                                        username: {
+                                            bsonType: 'string',
+                                            pattern: '[A-Za-z0-9-_]{3,20}'
+                                        },
+                                        pattern: { bsonType: 'int' },
+                                        time: { bsonType: 'int' },
+                                        date: { bsonType: 'date' }
+                                    }
+                                }
+                            }
+                        })];
+                case 1:
+                    _a.sent();
                     return [2 /*return*/];
             }
         });
@@ -108,18 +148,13 @@ function createUser(db) {
                 _a.sent();
                 return [4 /*yield*/, Promise.all([
                         createUser(db),
+                        createResult(db)
                     ])];
             case 4:
                 _a.sent();
-                console.log('Insert default user');
-                return [4 /*yield*/, db.collection('user').insertOne({
-                        username: 'test',
-                        password: sha256('test'),
-                        nickname: 'Just a test'
-                    })];
+                return [4 /*yield*/, client.close()];
             case 5:
                 _a.sent();
-                client.close();
                 return [3 /*break*/, 7];
             case 6:
                 err_1 = _a.sent();

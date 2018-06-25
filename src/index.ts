@@ -12,9 +12,9 @@ app.use(cors({
 app.use((req, res, next) => {
   console.log(`[${(new Date()).toISOString()}] ${req.method} ${req.originalUrl}`);
   if (req.method === 'GET')
-    req['data'] = req.query;
+  req['data'] = req.query;
   else
-    req['data'] = req.body;  
+  req['data'] = req.body;  
   next();
 });
 
@@ -22,9 +22,12 @@ import * as http from 'http';
 const server = new http.Server(app);
 import * as socketio from 'socket.io';
 const io = socketio(server);
-io.sockets.on('connection', (socket) => {
+io.sockets.on('connection', socket => {
   console.log('socket connected');
   socket.emit('connected');
+  socket.on('test', data => {
+    console.log(data);
+  })
 });
 
 app.get('/', (req, res) => {
@@ -32,6 +35,7 @@ app.get('/', (req, res) => {
 });
 
 import { MongoClient, Db } from 'mongodb';
+const SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 let db: Db;
 (async () => {
   const dbName = 'puzzle';
@@ -64,7 +68,7 @@ app.use(async (req, res, next) => {
     return;
   }
   req['user'] = await db.collection('user')
-    .findOne({ token: req['data'].token });
+  .findOne({ token: req['data'].token });
   next();
 });
 
@@ -94,13 +98,66 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   try {
-    let { username, password, nickname } = req['data'];
-    // if (nickname === undefined)
-    //   nickname = null;  
+    const { username, password, nickname } = req['data'];
     const r = await db.collection('user').insertOne({
       username, password, nickname
     });
     res.json({ status: r.result.ok });
+  } catch (err) {
+    console.log(err.errmsg);
+    res.json({ status: -1 });
+  }
+});
+
+app.post('/api/result', async (req, res) => {
+  try {
+    let { pattern, time, date } = req['data'];
+    date = parseInt(date);
+    if (date < 1e12)
+      date *= 1e3;
+    const r = await db.collection('result').insertOne({
+      pattern, time,
+      date: new Date(date),
+      username: req['user'].username
+    });
+    res.json({ status: r.result.ok });
+  } catch (err) {
+    console.log(err.errmsg);
+    res.json({ status: -1 });
+  }
+});
+
+app.get('/api/rank/:pattern', async (req, res) => {
+  try {
+    const result = [];
+    const rec = await db.collection('result').aggregate([{
+      $lookup: {
+        from: 'user',
+        localField: 'username',
+        foreignField: 'username',
+        as: 'user'
+      }
+    }, {
+      $match: {
+        pattern: parseInt(req.params.pattern)
+      }
+    }]).sort({ time: SORT_ASCENDING }).limit(10);
+    rec.each((err, r) => {
+      if (err) throw (err);
+      if (r === null) {
+        res.json({
+          status: 1,
+          rank: result
+        });
+        return;
+      }
+      result.push({
+        time: r.time,
+        username: r.username,
+        date: r.date,
+        nickname: r.user[0].nickname
+      });
+    });
   } catch (err) {
     console.log(err.errmsg);
     res.json({ status: -1 });
