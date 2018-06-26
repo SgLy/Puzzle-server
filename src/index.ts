@@ -111,13 +111,13 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/result', async (req, res) => {
   try {
-    let { pattern, time, date } = req['data'];
-    date = parseInt(date);
-    if (date < 1e12)
-      date *= 1e3;
+    let { pattern, time, timestamp } = req['data'];
+    timestamp = parseInt(timestamp);
+    if (timestamp < 1e12)
+      timestamp *= 1e3;
     const r = await db.collection('result').insertOne({
       pattern, time,
-      date: new Date(date),
+      timestamp: new Date(timestamp),
       username: req['user'].username
     });
     res.json({ status: r.result.ok });
@@ -154,7 +154,7 @@ app.get('/api/rank/:pattern', async (req, res) => {
       result.push({
         time: r.time,
         username: r.username,
-        date: r.date,
+        timestamp: r.timestamp,
         nickname: r.user[0].nickname
       });
     });

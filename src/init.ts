@@ -51,7 +51,7 @@ async function createResult(db) {
     validator: {
       $jsonSchema: {
         bsonType: 'object',
-        required: ['username', 'pattern', 'time', 'date'],
+        required: ['username', 'pattern', 'time', 'timestamp'],
         properties: {
           username: {
             bsonType: 'string',
@@ -59,7 +59,7 @@ async function createResult(db) {
           },
           pattern: { bsonType: 'int' },
           time: { bsonType: 'int' },
-          date: { bsonType: 'date' }
+          timestamp: { bsonType: 'date' }
         }
       }
     }

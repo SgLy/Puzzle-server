@@ -189,18 +189,18 @@ app.post('/api/register', function (req, res) { return __awaiter(_this, void 0, 
     });
 }); });
 app.post('/api/result', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, pattern, time, date, r, err_4;
+    var _a, pattern, time, timestamp, r, err_4;
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 2, , 3]);
-                _a = req['data'], pattern = _a.pattern, time = _a.time, date = _a.date;
-                date = parseInt(date);
-                if (date < 1e12)
-                    date *= 1e3;
+                _a = req['data'], pattern = _a.pattern, time = _a.time, timestamp = _a.timestamp;
+                timestamp = parseInt(timestamp);
+                if (timestamp < 1e12)
+                    timestamp *= 1e3;
                 return [4 /*yield*/, db.collection('result').insertOne({
                         pattern: pattern, time: time,
-                        date: new Date(date),
+                        timestamp: new Date(timestamp),
                         username: req['user'].username
                     })];
             case 1:
@@ -250,7 +250,7 @@ app.get('/api/rank/:pattern', function (req, res) { return __awaiter(_this, void
                     result_1.push({
                         time: r.time,
                         username: r.username,
-                        date: r.date,
+                        timestamp: r.timestamp,
                         nickname: r.user[0].nickname
                     });
                 });
