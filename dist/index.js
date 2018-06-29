@@ -82,7 +82,7 @@ app.get('/', function (req, res) {
     res.send('Puzzle app API');
 });
 var mongodb_1 = require("mongodb");
-var SORT_ASCENDING = 1, SORT_DESCENDING = -1;
+var user_1 = require("./user");
 var db;
 (function () { return __awaiter(_this, void 0, void 0, function () {
     var dbName, url, client, err_1, PORT;
@@ -99,6 +99,7 @@ var db;
                 client = _a.sent();
                 console.log('Connected to MongoDB');
                 db = client.db(dbName);
+                user_1.userApis(app, db);
                 return [3 /*break*/, 4];
             case 3:
                 err_1 = _a.sent();
@@ -113,167 +114,3 @@ var db;
         }
     });
 }); })();
-app.use(function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-    var _a;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0:
-                if (req.method === 'POST' && req.path === '/api/register') {
-                    next();
-                    return [2 /*return*/];
-                }
-                if (req.method === 'POST' && req.path === '/api/login') {
-                    next();
-                    return [2 /*return*/];
-                }
-                if (req.body.data.token === undefined) {
-                    res.status(403).end();
-                    return [2 /*return*/];
-                }
-                _a = req.body;
-                return [4 /*yield*/, db.collection('user')
-                        .findOne({ token: req.body.data.token })];
-            case 1:
-                _a.user = _b.sent();
-                next();
-                return [2 /*return*/];
-        }
-    });
-}); });
-app.get('/api/user', function (req, res) {
-    res.send(req.body.user);
-});
-var uuid = require("uuid/v1");
-app.post('/api/login', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, username, password, user, err_2;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0:
-                _a = req.body.data, username = _a.username, password = _a.password;
-                return [4 /*yield*/, db.collection('user').findOne({
-                        username: username, password: password
-                    })];
-            case 1:
-                user = _b.sent();
-                if (user === null) {
-                    res.json({ status: -1 });
-                    return [2 /*return*/];
-                }
-                user.token = uuid();
-                _b.label = 2;
-            case 2:
-                _b.trys.push([2, 4, , 5]);
-                return [4 /*yield*/, db.collection('user').findOneAndUpdate({ _id: user._id }, user)];
-            case 3:
-                _b.sent();
-                res.json({ status: 1, token: user.token });
-                return [3 /*break*/, 5];
-            case 4:
-                err_2 = _b.sent();
-                console.log(err_2.errmsg);
-                res.json({ status: -1 });
-                return [3 /*break*/, 5];
-            case 5: return [2 /*return*/];
-        }
-    });
-}); });
-app.post('/api/register', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, username, password, nickname, r, err_3;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0:
-                _b.trys.push([0, 2, , 3]);
-                _a = req.body.data, username = _a.username, password = _a.password, nickname = _a.nickname;
-                return [4 /*yield*/, db.collection('user').insertOne({
-                        username: username, password: password, nickname: nickname
-                    })];
-            case 1:
-                r = _b.sent();
-                res.json({ status: r.result.ok });
-                return [3 /*break*/, 3];
-            case 2:
-                err_3 = _b.sent();
-                console.log(err_3.errmsg);
-                res.json({ status: -1 });
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });
-app.post('/api/result', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, pattern, time, timestamp, r, err_4;
-    return __generator(this, function (_b) {
-        switch (_b.label) {
-            case 0:
-                _b.trys.push([0, 2, , 3]);
-                _a = req.body.data, pattern = _a.pattern, time = _a.time, timestamp = _a.timestamp;
-                timestamp = parseInt(timestamp);
-                if (timestamp < 1e12)
-                    timestamp *= 1e3;
-                return [4 /*yield*/, db.collection('result').insertOne({
-                        pattern: pattern, time: time,
-                        timestamp: new Date(timestamp),
-                        username: req.body.user.username
-                    })];
-            case 1:
-                r = _b.sent();
-                res.json({ status: r.result.ok });
-                return [3 /*break*/, 3];
-            case 2:
-                err_4 = _b.sent();
-                console.log(err_4.errmsg);
-                res.json({ status: -1 });
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });
-app.get('/api/rank/:pattern', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-    var result_1, rec, err_5;
-    return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                _a.trys.push([0, 2, , 3]);
-                ;
-                result_1 = [];
-                return [4 /*yield*/, db.collection('result').aggregate([{
-                            $lookup: {
-                                from: 'user',
-                                localField: 'username',
-                                foreignField: 'username',
-                                as: 'user'
-                            }
-                        }, {
-                            $match: {
-                                pattern: parseInt(req.params.pattern)
-                            }
-                        }]).sort({ time: SORT_ASCENDING }).limit(10)];
-            case 1:
-                rec = _a.sent();
-                rec.each(function (err, r) {
-                    if (err)
-                        throw (err);
-                    if (r === null) {
-                        res.json({
-                            status: 1,
-                            rank: result_1
-                        });
-                        return;
-                    }
-                    result_1.push({
-                        time: r.time,
-                        username: r.username,
-                        timestamp: r.timestamp,
-                        nickname: r.user[0].nickname
-                    });
-                });
-                return [3 /*break*/, 3];
-            case 2:
-                err_5 = _a.sent();
-                console.log(err_5.errmsg);
-                res.json({ status: -1 });
-                return [3 /*break*/, 3];
-            case 3: return [2 /*return*/];
-        }
-    });
-}); });

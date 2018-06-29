@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
 });
 
 import { MongoClient, Db } from 'mongodb';
-const SORT_ASCENDING = 1, SORT_DESCENDING = -1;
+import { userApis } from './user';
 let db: Db;
 (async () => {
   const dbName = 'puzzle';
@@ -50,6 +50,7 @@ let db: Db;
     let client = await MongoClient.connect(url);
     console.log('Connected to MongoDB');
     db = client.db(dbName);
+    userApis(app, db);
   } catch (err) {
     console.log(err.stack);
   }
@@ -59,118 +60,3 @@ let db: Db;
     console.log(`Listening ${PORT}`);
   });
 })();
-
-app.use(async (req, res, next) => {
-  if (req.method === 'POST' && req.path === '/api/register') {
-    next();
-    return;
-  }
-  if (req.method === 'POST' && req.path === '/api/login') {
-    next();
-    return;
-  }
-  if (req.body.data.token === undefined) {
-    res.status(403).end();
-    return;
-  }
-  req.body.user = await db.collection('user')
-  .findOne({ token: req.body.data.token });
-  next();
-});
-
-app.get('/api/user', (req, res) => {
-  res.send(req.body.user);
-});
-
-import * as uuid from 'uuid/v1';
-app.post('/api/login', async (req, res) => {
-  const { username, password } = req.body.data;
-  const user = await db.collection('user').findOne({
-    username, password
-  });
-  if (user === null) {
-    res.json({ status: -1 });
-    return;
-  }
-  user.token = uuid();
-  try {
-    await db.collection('user').findOneAndUpdate({ _id: user._id }, user);
-    res.json({ status: 1, token: user.token });
-  } catch (err) {
-    console.log(err.errmsg);
-    res.json({ status: -1 });
-  }
-});
-
-app.post('/api/register', async (req, res) => {
-  try {
-    const { username, password, nickname } = req.body.data;
-    const r = await db.collection('user').insertOne({
-      username, password, nickname
-    });
-    res.json({ status: r.result.ok });
-  } catch (err) {
-    console.log(err.errmsg);
-    res.json({ status: -1 });
-  }
-});
-
-app.post('/api/result', async (req, res) => {
-  try {
-    let { pattern, time, timestamp } = req.body.data;
-    timestamp = parseInt(timestamp);
-    if (timestamp < 1e12)
-    timestamp *= 1e3;
-    const r = await db.collection('result').insertOne({
-      pattern, time,
-      timestamp: new Date(timestamp),
-      username: req.body.user.username
-    });
-    res.json({ status: r.result.ok });
-  } catch (err) {
-    console.log(err.errmsg);
-    res.json({ status: -1 });
-  }
-});
-
-app.get('/api/rank/:pattern', async (req, res) => {
-  try {;
-    const result : {
-      time: number,
-      username: string,
-      timestamp: number,
-      nickname: string
-    }[] = [];
-    const rec = await db.collection('result').aggregate([{
-      $lookup: {
-        from: 'user',
-        localField: 'username',
-        foreignField: 'username',
-        as: 'user'
-      }
-    }, {
-      $match: {
-        pattern: parseInt(req.params.pattern)
-      }
-    }]).sort({ time: SORT_ASCENDING }).limit(10);
-    rec.each((err, r) => {
-      if (err) throw (err);
-      if (r === null) {
-        res.json({
-          status: 1,
-          rank: result
-        });
-        return;
-      }
-      result.push({
-        time: r.time,
-        username: r.username,
-        timestamp: r.timestamp,
-        nickname: r.user[0].nickname
-      });
-    });
-  } catch (err) {
-    console.log(err.errmsg);
-    res.json({ status: -1 });
-  }
-});

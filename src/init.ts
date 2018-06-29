@@ -59,6 +59,7 @@ async function createResult(db: Db) {
             pattern: '[A-Za-z0-9-_]{3,20}'
           },
           pattern: { bsonType: 'int' },
+          split: { bsonType: 'int' },
           time: { bsonType: 'int' },
           timestamp: { bsonType: 'date' }
         }
