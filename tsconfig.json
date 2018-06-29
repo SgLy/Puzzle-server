@@ -1,5 +1,7 @@
 {
     "compilerOptions": {
+        "strict": true,
+        "alwaysStrict": true,
         "target": "es3",
         "module": "commonjs",
         "rootDir": "src",

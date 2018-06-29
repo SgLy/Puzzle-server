@@ -12,9 +12,9 @@ app.use(cors({
 app.use((req, res, next) => {
   console.log(`[${(new Date()).toISOString()}] ${req.method} ${req.originalUrl}`);
   if (req.method === 'GET')
-  req['data'] = req.query;
+    req.body = { data: req.query };
   else
-  req['data'] = req.body;  
+    req.body = { data: req.body };
   next();
 });
 
@@ -22,11 +22,17 @@ import * as http from 'http';
 const server = new http.Server(app);
 import * as socketio from 'socket.io';
 const io = socketio(server);
+
+import { makeRoomClient } from './room';
 io.sockets.on('connection', socket => {
   console.log('socket connected');
   socket.emit('connected');
-  socket.on('test', data => {
-    console.log(data);
+  socket.on('auth', async token => {
+    const user = await db.collection('user').findOne({ token });
+    if (user !== null)
+      makeRoomClient(socket, user.username, io);
+    else
+      socket.emit('authFailed');
   })
 });
 
@@ -63,22 +69,22 @@ app.use(async (req, res, next) => {
     next();
     return;
   }
-  if (req['data'].token === undefined) {
+  if (req.body.data.token === undefined) {
     res.status(403).end();
     return;
   }
-  req['user'] = await db.collection('user')
-  .findOne({ token: req['data'].token });
+  req.body.user = await db.collection('user')
+  .findOne({ token: req.body.data.token });
   next();
 });
 
 app.get('/api/user', (req, res) => {
-  res.send(req['user']);
+  res.send(req.body.user);
 });
 
 import * as uuid from 'uuid/v1';
 app.post('/api/login', async (req, res) => {
-  const { username, password } = req['data'];
+  const { username, password } = req.body.data;
   const user = await db.collection('user').findOne({
     username, password
   });
@@ -98,7 +104,7 @@ app.post('/api/login', async (req, res) => {
 
 app.post('/api/register', async (req, res) => {
   try {
-    const { username, password, nickname } = req['data'];
+    const { username, password, nickname } = req.body.data;
     const r = await db.collection('user').insertOne({
       username, password, nickname
     });
@@ -111,14 +117,14 @@ app.post('/api/register', async (req, res) => {
 
 app.post('/api/result', async (req, res) => {
   try {
-    let { pattern, time, timestamp } = req['data'];
+    let { pattern, time, timestamp } = req.body.data;
     timestamp = parseInt(timestamp);
     if (timestamp < 1e12)
-      timestamp *= 1e3;
+    timestamp *= 1e3;
     const r = await db.collection('result').insertOne({
       pattern, time,
       timestamp: new Date(timestamp),
-      username: req['user'].username
+      username: req.body.user.username
     });
     res.json({ status: r.result.ok });
   } catch (err) {
@@ -128,8 +134,13 @@ app.post('/api/result', async (req, res) => {
 });
 
 app.get('/api/rank/:pattern', async (req, res) => {
-  try {
-    const result = [];
+  try {;
+    const result : {
+      time: number,
+      username: string,
+      timestamp: number,
+      nickname: string
+    }[] = [];
     const rec = await db.collection('result').aggregate([{
       $lookup: {
         from: 'user',

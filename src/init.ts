@@ -1,8 +1,9 @@
 import * as crypto from 'crypto';
-const sha256 = (s) => crypto.createHash('sha256').update(s).digest('hex');
-import { MongoClient } from 'mongodb';
+const sha256 = (s: string) =>
+  crypto.createHash('sha256').update(s).digest('hex');
+import { MongoClient, Db } from 'mongodb';
 
-async function createUser(db) {
+async function createUser(db: Db) {
   console.log('Creating user');
   await db.createCollection('user', {
     validationLevel: 'strict',
@@ -43,7 +44,7 @@ async function createUser(db) {
   });
 }
 
-async function createResult(db) {
+async function createResult(db: Db) {
   console.log('Creating result');
   await db.createCollection('result', {
     validationLevel: 'strict',

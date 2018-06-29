@@ -49,21 +49,34 @@ app.use(cors({
 app.use(function (req, res, next) {
     console.log("[" + (new Date()).toISOString() + "] " + req.method + " " + req.originalUrl);
     if (req.method === 'GET')
-        req['data'] = req.query;
+        req.body = { data: req.query };
     else
-        req['data'] = req.body;
+        req.body = { data: req.body };
     next();
 });
 var http = require("http");
 var server = new http.Server(app);
 var socketio = require("socket.io");
 var io = socketio(server);
+var room_1 = require("./room");
 io.sockets.on('connection', function (socket) {
     console.log('socket connected');
     socket.emit('connected');
-    socket.on('test', function (data) {
-        console.log(data);
-    });
+    socket.on('auth', function (token) { return __awaiter(_this, void 0, void 0, function () {
+        var user;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, db.collection('user').findOne({ token: token })];
+                case 1:
+                    user = _a.sent();
+                    if (user !== null)
+                        room_1.makeRoomClient(socket, user.username, io);
+                    else
+                        socket.emit('authFailed');
+                    return [2 /*return*/];
+            }
+        });
+    }); });
 });
 app.get('/', function (req, res) {
     res.send('Puzzle app API');
@@ -101,9 +114,9 @@ var db;
     });
 }); })();
 app.use(function (req, res, next) { return __awaiter(_this, void 0, void 0, function () {
-    var _a, _b;
-    return __generator(this, function (_c) {
-        switch (_c.label) {
+    var _a;
+    return __generator(this, function (_b) {
+        switch (_b.label) {
             case 0:
                 if (req.method === 'POST' && req.path === '/api/register') {
                     next();
@@ -113,23 +126,22 @@ app.use(function (req, res, next) { return __awaiter(_this, void 0, void 0, func
                     next();
                     return [2 /*return*/];
                 }
-                if (req['data'].token === undefined) {
+                if (req.body.data.token === undefined) {
                     res.status(403).end();
                     return [2 /*return*/];
                 }
-                _a = req;
-                _b = 'user';
+                _a = req.body;
                 return [4 /*yield*/, db.collection('user')
-                        .findOne({ token: req['data'].token })];
+                        .findOne({ token: req.body.data.token })];
             case 1:
-                _a[_b] = _c.sent();
+                _a.user = _b.sent();
                 next();
                 return [2 /*return*/];
         }
     });
 }); });
 app.get('/api/user', function (req, res) {
-    res.send(req['user']);
+    res.send(req.body.user);
 });
 var uuid = require("uuid/v1");
 app.post('/api/login', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
@@ -137,7 +149,7 @@ app.post('/api/login', function (req, res) { return __awaiter(_this, void 0, voi
     return __generator(this, function (_b) {
         switch (_b.label) {
             case 0:
-                _a = req['data'], username = _a.username, password = _a.password;
+                _a = req.body.data, username = _a.username, password = _a.password;
                 return [4 /*yield*/, db.collection('user').findOne({
                         username: username, password: password
                     })];
@@ -171,7 +183,7 @@ app.post('/api/register', function (req, res) { return __awaiter(_this, void 0, 
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 2, , 3]);
-                _a = req['data'], username = _a.username, password = _a.password, nickname = _a.nickname;
+                _a = req.body.data, username = _a.username, password = _a.password, nickname = _a.nickname;
                 return [4 /*yield*/, db.collection('user').insertOne({
                         username: username, password: password, nickname: nickname
                     })];
@@ -194,14 +206,14 @@ app.post('/api/result', function (req, res) { return __awaiter(_this, void 0, vo
         switch (_b.label) {
             case 0:
                 _b.trys.push([0, 2, , 3]);
-                _a = req['data'], pattern = _a.pattern, time = _a.time, timestamp = _a.timestamp;
+                _a = req.body.data, pattern = _a.pattern, time = _a.time, timestamp = _a.timestamp;
                 timestamp = parseInt(timestamp);
                 if (timestamp < 1e12)
                     timestamp *= 1e3;
                 return [4 /*yield*/, db.collection('result').insertOne({
                         pattern: pattern, time: time,
                         timestamp: new Date(timestamp),
-                        username: req['user'].username
+                        username: req.body.user.username
                     })];
             case 1:
                 r = _b.sent();
@@ -222,6 +234,7 @@ app.get('/api/rank/:pattern', function (req, res) { return __awaiter(_this, void
         switch (_a.label) {
             case 0:
                 _a.trys.push([0, 2, , 3]);
+                ;
                 result_1 = [];
                 return [4 /*yield*/, db.collection('result').aggregate([{
                             $lookup: {
