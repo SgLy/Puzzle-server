@@ -57,7 +57,7 @@ app.use(function (req, res, next) {
 var http = require("http");
 var server = new http.Server(app);
 var socketio = require("socket.io");
-var io = socketio(server);
+var io = socketio(server, { httpCompression: true });
 var room_1 = require("./room");
 io.sockets.on('connection', function (socket) {
     console.log('socket connected');

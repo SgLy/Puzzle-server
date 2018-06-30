@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 import * as http from 'http';
 const server = new http.Server(app);
 import * as socketio from 'socket.io';
-const io = socketio(server);
+const io = socketio(server, { httpCompression: true });
 
 import { makeRoomClient } from './room';
 io.sockets.on('connection', socket => {
