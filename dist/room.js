@@ -1,17 +1,58 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var game_1 = require("./game");
+var Socket = /** @class */ (function () {
+    function Socket(socket, username) {
+        this.socket = socket;
+        this.username = username;
+    }
+    Socket.prototype.emit = function (event) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        console.log("[EMIT] " + this.username + " " + event + " " + JSON.stringify(args));
+        this.socket.emit(event, args);
+    };
+    Socket.prototype.on = function (event, listener) {
+        var _this = this;
+        this.socket.on(event, function (args) {
+            console.log("[ ON ] " + _this.username + " " + event + " " + JSON.stringify(args));
+            listener(args);
+        });
+    };
+    Object.defineProperty(Socket.prototype, "id", {
+        get: function () {
+            return this.socket.id;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Socket;
+}());
+var SocketGlobal = /** @class */ (function () {
+    function SocketGlobal(global) {
+        this.global = global;
+    }
+    SocketGlobal.prototype.emit = function (event) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        console.log("[EMIT] GLOBAL " + event + " " + JSON.stringify(args));
+        this.global.emit(event, args);
+    };
+    return SocketGlobal;
+}());
 var Room = /** @class */ (function () {
     function Room(master, pattern, split) {
         this.master = master;
         this.pattern = pattern;
         this.split = split;
         this.members = [];
-        this.idToName = {};
     }
-    Room.prototype.addMember = function (s, username) {
+    Room.prototype.addMember = function (s) {
         this.members.push(s);
-        this.idToName[s.id] = username;
     };
     Room.prototype.removeMember = function (s) {
         var i = this.members.findIndex(function (m) { return m.id === s.id; });
@@ -26,8 +67,7 @@ var Room = /** @class */ (function () {
     };
     Object.defineProperty(Room.prototype, "memberList", {
         get: function () {
-            var _this = this;
-            return this.members.map(function (s) { return _this.idToName[s.id]; });
+            return this.members.map(function (s) { return s.username; });
         },
         enumerable: true,
         configurable: true
@@ -56,12 +96,14 @@ var Room = /** @class */ (function () {
 exports.Room = Room;
 ;
 var rooms = {};
-function makeRoomClient(socket, username, global) {
+function makeRoomClient(_socket, username, _global) {
     var currentRoom;
+    var socket = new Socket(_socket, username);
+    var global = new SocketGlobal(_global);
     socket.on('newRoom', function (params) {
         var split = params.split, pattern = params.pattern;
         rooms[username] = new Room(username, pattern, split);
-        rooms[username].addMember(socket, username);
+        rooms[username].addMember(socket);
         // global.emit('roomList', { username, size: 1, pattern, split });
         global.emit('roomList', {
             rooms: Object.values(rooms).map(function (room) { return room.detail; })
@@ -73,7 +115,7 @@ function makeRoomClient(socket, username, global) {
         currentRoom = master;
         var room = rooms[master];
         room.broadcast('enterRoom', username);
-        room.addMember(socket, username);
+        room.addMember(socket);
         socket.emit('roomMember', {
             members: room.memberList
         });

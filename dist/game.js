@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 function gameRoom(room) {
     room.members.forEach(function (s) {
-        var username = room.idToName[s.id];
+        var username = s.username;
         s.on('pickPiece', function (pieceIndex) {
             room.broadcast('pickPiece', { pieceIndex: pieceIndex, username: username }, s);
         });

@@ -3,7 +3,7 @@ import { Room } from './room';
 
 export function gameRoom(room: Room) {
   room.members.forEach(s => {
-    const username = room.idToName[s.id];
+    const username = s.username;
     s.on('pickPiece', pieceIndex => {
       room.broadcast('pickPiece', { pieceIndex, username }, s);
     });
