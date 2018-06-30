@@ -62,7 +62,10 @@ function makeRoomClient(socket, username, global) {
         var split = params.split, pattern = params.pattern;
         rooms[username] = new Room(username, pattern, split);
         rooms[username].addMember(socket, username);
-        global.emit('newRoom', { username: username, size: 1, pattern: pattern, split: split });
+        // global.emit('roomList', { username, size: 1, pattern, split });
+        global.emit('roomList', {
+            rooms: Object.values(rooms).map(function (room) { return room.detail; })
+        });
     });
     socket.on('enterRoom', function (master) {
         if (currentRoom !== undefined)
@@ -94,12 +97,18 @@ function makeRoomClient(socket, username, global) {
         rooms[username].broadcast('startGame');
         game_1.gameRoom(rooms[username]);
         delete rooms[username];
-        global.emit('deleteRoom', username);
+        // global.emit('deleteRoom', username);
+        global.emit('roomList', {
+            rooms: Object.values(rooms).map(function (room) { return room.detail; })
+        });
     });
     socket.on('deleteRoom', function () {
-        global.emit('deleteRoom', username);
+        // global.emit('deleteRoom', username);
         rooms[username].broadcast('cancelRoom');
         delete rooms[username];
+        global.emit('roomList', {
+            rooms: Object.values(rooms).map(function (room) { return room.detail; })
+        });
     });
 }
 exports.makeRoomClient = makeRoomClient;
