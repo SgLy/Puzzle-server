@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var _this = this;
-exports.__esModule = true;
+Object.defineProperty(exports, "__esModule", { value: true });
 var crypto = require("crypto");
 var sha256 = function (s) {
     return crypto.createHash('sha256').update(s).digest('hex');
