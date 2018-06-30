@@ -72,7 +72,9 @@ export function makeRoomClient(
     const room = rooms[master];
     room.broadcast('enterRoom', username);
     room.addMember(socket, username);
-    socket.emit('roomMember', room.memberList);
+    socket.emit('roomMember', {
+      members: room.memberList
+    });
     global.emit('changeRoom', { room: master, size: room.size });
   });
   socket.on('leaveRoom', () => {
@@ -85,7 +87,9 @@ export function makeRoomClient(
     currentRoom = undefined;
   });
   socket.on('roomList', () => {
-    socket.emit('roomList', Object.values(rooms).map(room => room.detail));
+    socket.emit('roomList', {
+      rooms: Object.values(rooms).map(room => room.detail)
+    });
   });
   socket.on('startGame', () => {
     rooms[username].broadcast('startGame');
