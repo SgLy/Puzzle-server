@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var game_1 = require("./game");
 var Room = /** @class */ (function () {
     function Room(master, pattern, split) {
         this.master = master;
@@ -52,6 +53,7 @@ var Room = /** @class */ (function () {
     });
     return Room;
 }());
+exports.Room = Room;
 ;
 var rooms = {};
 function makeRoomClient(socket, username, global) {
@@ -90,6 +92,7 @@ function makeRoomClient(socket, username, global) {
     });
     socket.on('startGame', function () {
         rooms[username].broadcast('startGame');
+        game_1.gameRoom(rooms[username]);
         delete rooms[username];
         global.emit('deleteRoom', username);
     });

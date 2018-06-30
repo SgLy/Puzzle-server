@@ -1,11 +1,12 @@
 import * as socketio from 'socket.io';
+import { gameRoom } from './game';
 
-class Room {
+export class Room {
   public master: string;
   public members: socketio.Socket[];
   public split: number;
   public pattern: number;
-  private idToName: { [key: string]: string };
+  public idToName: { [key: string]: string };
   constructor(master: string, pattern: number, split: number) {
     this.master = master;
     this.pattern = pattern;
@@ -93,6 +94,7 @@ export function makeRoomClient(
   });
   socket.on('startGame', () => {
     rooms[username].broadcast('startGame');
+    gameRoom(rooms[username]);
     delete rooms[username];
     global.emit('deleteRoom', username);
   });
