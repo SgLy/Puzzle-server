@@ -4,20 +4,22 @@ import { gameRoom } from './game';
 class Socket {
   private socket: socketio.Socket;
   public username: string;
+  public currentRoom: Room | undefined;
   constructor(socket: socketio.Socket, username: string) {
     this.socket = socket;
     this.username = username;
+    this.currentRoom = undefined;
   }
 
   emit(event: string, ...args: any[]) {
-    console.log(`[EMIT] ${this.username} ${event} ${JSON.stringify(args)}`);
-    this.socket.emit(event, args);
+  console.log(`[EMIT] ${this.username} ${event} ${args.map(a => JSON.stringify(a))}`);
+    this.socket.emit(event, ...args);
   }
 
   on(event: string, listener: (...args: any[]) => void) {
-    this.socket.on(event, (args) => {
-      console.log(`[ ON ] ${this.username} ${event} ${JSON.stringify(args)}`);
-      listener(args);
+    this.socket.on(event, (...args) => {
+    console.log(`[ ON ] ${this.username} ${event} ${args.map(a => JSON.stringify(a))}`);
+      listener(...args);
     });
   }
 
@@ -33,8 +35,8 @@ class SocketGlobal {
   }
 
   emit(event: string, ...args: any[]) {
-    console.log(`[EMIT] GLOBAL ${event} ${JSON.stringify(args)}`);
-    this.global.emit(event, args);
+  console.log(`[EMIT] GLOBAL ${event} ${args.map(a => JSON.stringify(a))}`);
+    this.global.emit(event, ...args);
   }
 }
 
@@ -52,11 +54,13 @@ export class Room {
 
   addMember(s: Socket) {
     this.members.push(s);
+    s.currentRoom = this;
   }
 
   removeMember(s: Socket) {
     const i = this.members.findIndex(m => m.id === s.id);
     this.members.splice(i, 1);
+    s.currentRoom = undefined;
   }
 
   broadcast(event: string, args?: any, exclude?: Socket) {
@@ -85,67 +89,53 @@ export class Room {
   }
 }
 
-interface RoomList {
+interface Rooms {
   [key: string]: Room
 };
-const rooms: RoomList = {};
+const rooms: Rooms = {};
+const roomList = (rooms: Rooms) =>
+  Object.values(rooms).map(room => room.detail);
 
 export function makeRoomClient(
   _socket: socketio.Socket, username: string, _global: socketio.Server
 ): void {
-  let currentRoom: string|undefined;
   const socket = new Socket(_socket, username);
   const global = new SocketGlobal(_global);
   socket.on('newRoom', (params) => {
     const { split, pattern } = params;
     rooms[username] = new Room(username, pattern, split);
     rooms[username].addMember(socket);
-    // global.emit('roomList', { username, size: 1, pattern, split });
-    global.emit('roomList', {
-      rooms: Object.values(rooms).map(room => room.detail)
-    });
+    global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('enterRoom', master => {
-    if (currentRoom !== undefined)
+    if (socket.currentRoom !== undefined)
       return;
-    currentRoom = master;
     const room = rooms[master];
-    room.broadcast('enterRoom', username);
     room.addMember(socket);
-    socket.emit('roomMember', {
-      members: room.memberList
-    });
-    global.emit('changeRoom', { room: master, size: room.size });
+    room.broadcast('roomMember', { members: room.memberList });
+    global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('leaveRoom', () => {
-    if (currentRoom === undefined)
+    if (socket.currentRoom === undefined)
       return;
-    const room = rooms[currentRoom];
-    global.emit('changeRoom', { room: currentRoom, size: room.members.length });
+    const room = socket.currentRoom;
     room.removeMember(socket);
-    room.broadcast('leaveRoom', username);
-    currentRoom = undefined;
+    global.emit('roomList', { rooms: roomList(rooms) });
+    room.broadcast('roomMember', { members: room.memberList });
   });
   socket.on('roomList', () => {
-    socket.emit('roomList', {
-      rooms: Object.values(rooms).map(room => room.detail)
-    });
+    socket.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('startGame', () => {
     rooms[username].broadcast('startGame');
     gameRoom(rooms[username]);
     delete rooms[username];
-    // global.emit('deleteRoom', username);
-    global.emit('roomList', {
-      rooms: Object.values(rooms).map(room => room.detail)
-    });
+    global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('deleteRoom', () => {
     // global.emit('deleteRoom', username);
     rooms[username].broadcast('cancelRoom');
     delete rooms[username];
-    global.emit('roomList', {
-      rooms: Object.values(rooms).map(room => room.detail)
-    });
+    global.emit('roomList', { rooms: roomList(rooms) });
   });
 }
