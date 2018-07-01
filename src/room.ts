@@ -76,6 +76,10 @@ export class Room {
     });
   }
 
+  contain(username: string) {
+    return this.members.findIndex(s => s.username === username) === -1;
+  }
+
   get memberList() {
     return this.members.map(s => s.username);
   }
@@ -97,7 +101,7 @@ export class Room {
 interface Rooms {
   [key: string]: Room
 };
-const rooms: Rooms = {};
+export const rooms: Rooms = {};
 const roomList = (rooms: Rooms) =>
   Object.values(rooms).map(room => room.detail);
 

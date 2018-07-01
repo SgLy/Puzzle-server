@@ -78,6 +78,9 @@ var Room = /** @class */ (function () {
             s.emit(event, args);
         });
     };
+    Room.prototype.contain = function (username) {
+        return this.members.findIndex(function (s) { return s.username === username; }) === -1;
+    };
     Object.defineProperty(Room.prototype, "memberList", {
         get: function () {
             return this.members.map(function (s) { return s.username; });
@@ -108,7 +111,7 @@ var Room = /** @class */ (function () {
 }());
 exports.Room = Room;
 ;
-var rooms = {};
+exports.rooms = {};
 var roomList = function (rooms) {
     return Object.values(rooms).map(function (room) { return room.detail; });
 };
@@ -117,41 +120,41 @@ function makeRoomClient(_socket, username, _global) {
     var global = new SocketGlobal(_global);
     socket.on('newRoom', function (params) {
         var split = params.split, pattern = params.pattern;
-        rooms[username] = new Room(username, pattern, split);
-        rooms[username].addMember(socket);
-        global.emit('roomList', { rooms: roomList(rooms) });
+        exports.rooms[username] = new Room(username, pattern, split);
+        exports.rooms[username].addMember(socket);
+        global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
     socket.on('enterRoom', function (master) {
         if (socket.currentRoom !== undefined)
             return;
-        var room = rooms[master];
+        var room = exports.rooms[master];
         room.addMember(socket);
         room.broadcast('roomMember', { members: room.memberList });
-        global.emit('roomList', { rooms: roomList(rooms) });
+        global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
     socket.on('leaveRoom', function () {
         if (socket.currentRoom === undefined)
             return;
         var room = socket.currentRoom;
         room.removeMember(socket);
-        global.emit('roomList', { rooms: roomList(rooms) });
+        global.emit('roomList', { rooms: roomList(exports.rooms) });
         room.broadcast('roomMember', { members: room.memberList });
     });
     socket.on('roomList', function () {
-        socket.emit('roomList', { rooms: roomList(rooms) });
+        socket.emit('roomList', { rooms: roomList(exports.rooms) });
     });
     socket.on('startGame', function () {
-        rooms[username].broadcast('startGame');
-        game_1.gameRoom(rooms[username]);
-        rooms[username].destroy();
-        delete rooms[username];
-        global.emit('roomList', { rooms: roomList(rooms) });
+        exports.rooms[username].broadcast('startGame');
+        game_1.gameRoom(exports.rooms[username]);
+        exports.rooms[username].destroy();
+        delete exports.rooms[username];
+        global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
     socket.on('deleteRoom', function () {
-        rooms[username].broadcast('cancelRoom');
-        rooms[username].destroy();
-        delete rooms[username];
-        global.emit('roomList', { rooms: roomList(rooms) });
+        exports.rooms[username].broadcast('cancelRoom');
+        exports.rooms[username].destroy();
+        delete exports.rooms[username];
+        global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
 }
 exports.makeRoomClient = makeRoomClient;

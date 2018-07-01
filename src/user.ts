@@ -2,6 +2,8 @@ import * as express from 'express';
 import { MongoClient, Db } from 'mongodb';
 import * as uuid from 'uuid/v1';
 import * as multer from 'multer';
+import { rooms } from './room';
+import { join } from 'path';
 const SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 
 export function userApis(app: express.Express, db: Db): void {
@@ -121,11 +123,36 @@ export function userApis(app: express.Express, db: Db): void {
         cb(null, 'static/images');
       },
       filename: function (req: express.Request, file, cb) {
-        cb(null, `${req.body.user.id}`);
+        db.collection('user')
+          .findOne({ token: req.params.token })
+          .then(user => {
+            req.body.user = user;
+            cb(null, `${user._id}`);
+          });
       }
     }))
   });
-  app.post('/api/image', upload.single('image'), (req, res) => {
+  app.post('/api/image/:token', upload.single('image'), (req, res) => {
+    const room = rooms[req.body.user];
+    const socket = rooms[req.body.user].members
+      .find(s => s.username === room.master);
+    if (socket)
+      room.broadcast('image', '', socket);
     res.json({ status: 1 });
+  });
+  app.get('/api/image/:token', async (req, res) => {
+    const user = await db.collection('user')
+      .findOne({ token: req.params.token });
+    const room = Object.values(rooms).find(r => r.contain(user.username));
+    if (room === undefined)
+      res.send('');
+    else {
+      const master = await db.collection('user')
+        .findOne({ username: room.master });
+      const path = join('.', 'static', 'images', master._id);
+      res
+        .contentType('image/jpeg')
+        .sendFile(path);
+    }
   });
 }

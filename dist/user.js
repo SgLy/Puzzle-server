@@ -36,6 +36,9 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var uuid = require("uuid/v1");
+var multer = require("multer");
+var room_1 = require("./room");
+var path_1 = require("path");
 var SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 function userApis(app, db) {
     var _this = this;
@@ -146,7 +149,7 @@ function userApis(app, db) {
             }
         });
     }); });
-    app.get('/api/rank/:pattern/:split', loginRequired, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+    app.get('/api/rank/:pattern/:split', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
         var result_1, rec, err_4;
         return __generator(this, function (_a) {
             switch (_a.label) {
@@ -193,6 +196,54 @@ function userApis(app, db) {
                     res.json({ status: -1 });
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];
+            }
+        });
+    }); });
+    var upload = multer({
+        storage: multer.diskStorage(({
+            destination: function (req, file, cb) {
+                cb(null, 'static/images');
+            },
+            filename: function (req, file, cb) {
+                db.collection('user')
+                    .findOne({ token: req.params.token })
+                    .then(function (user) {
+                    req.body.user = user;
+                    cb(null, "" + user._id);
+                });
+            }
+        }))
+    });
+    app.post('/api/image/:token', upload.single('image'), function (req, res) {
+        var room = room_1.rooms[req.body.user];
+        var socket = room_1.rooms[req.body.user].members
+            .find(function (s) { return s.username === room.master; });
+        if (socket)
+            room.broadcast('image', '', socket);
+        res.json({ status: 1 });
+    });
+    app.get('/api/image/:token', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var user, room, master, path;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, db.collection('user')
+                        .findOne({ token: req.params.token })];
+                case 1:
+                    user = _a.sent();
+                    room = Object.values(room_1.rooms).find(function (r) { return r.contain(user.username); });
+                    if (!(room === undefined)) return [3 /*break*/, 2];
+                    res.send('');
+                    return [3 /*break*/, 4];
+                case 2: return [4 /*yield*/, db.collection('user')
+                        .findOne({ username: room.master })];
+                case 3:
+                    master = _a.sent();
+                    path = path_1.join('.', 'static', 'images', master._id);
+                    res
+                        .contentType('image/jpeg')
+                        .sendFile(path);
+                    _a.label = 4;
+                case 4: return [2 /*return*/];
             }
         });
     }); });
