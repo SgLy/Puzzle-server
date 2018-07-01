@@ -1,6 +1,7 @@
 import * as express from 'express';
 import { MongoClient, Db } from 'mongodb';
 import * as uuid from 'uuid/v1';
+import * as multer from 'multer';
 const SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 
 export function userApis(app: express.Express, db: Db): void {
@@ -71,7 +72,7 @@ export function userApis(app: express.Express, db: Db): void {
     }
   });
   
-  app.get('/api/rank/:pattern/:split', loginRequired, async (req, res) => {
+  app.get('/api/rank/:pattern/:split', async (req, res) => {
     try {;
       const result : {
         time: number,
@@ -112,5 +113,19 @@ export function userApis(app: express.Express, db: Db): void {
       console.log(err.errmsg);
       res.json({ status: -1 });
     }
+  });
+
+  const upload = multer({
+    storage: multer.diskStorage(({
+      destination: function (req, file, cb) {
+        cb(null, 'static/images');
+      },
+      filename: function (req: express.Request, file, cb) {
+        cb(null, `${req.body.user.id}`);
+      }
+    }))
+  });
+  app.post('/api/image', upload.single('image'), (req, res) => {
+    res.json({ status: 1 });
   });
 }
