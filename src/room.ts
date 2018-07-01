@@ -63,6 +63,11 @@ export class Room {
     s.currentRoom = undefined;
   }
 
+  destroy() {
+    this.members.forEach(m => { m.currentRoom = undefined; });
+    this.members = [];
+  }
+
   broadcast(event: string, args?: any, exclude?: Socket) {
     this.members.forEach(s => {
       if (exclude !== undefined && s.id === exclude.id)
@@ -129,12 +134,13 @@ export function makeRoomClient(
   socket.on('startGame', () => {
     rooms[username].broadcast('startGame');
     gameRoom(rooms[username]);
+    rooms[username].destroy();
     delete rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('deleteRoom', () => {
-    // global.emit('deleteRoom', username);
     rooms[username].broadcast('cancelRoom');
+    rooms[username].destroy();
     delete rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });

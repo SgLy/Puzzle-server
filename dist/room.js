@@ -67,6 +67,10 @@ var Room = /** @class */ (function () {
         this.members.splice(i, 1);
         s.currentRoom = undefined;
     };
+    Room.prototype.destroy = function () {
+        this.members.forEach(function (m) { m.currentRoom = undefined; });
+        this.members = [];
+    };
     Room.prototype.broadcast = function (event, args, exclude) {
         this.members.forEach(function (s) {
             if (exclude !== undefined && s.id === exclude.id)
@@ -139,12 +143,13 @@ function makeRoomClient(_socket, username, _global) {
     socket.on('startGame', function () {
         rooms[username].broadcast('startGame');
         game_1.gameRoom(rooms[username]);
+        rooms[username].destroy();
         delete rooms[username];
         global.emit('roomList', { rooms: roomList(rooms) });
     });
     socket.on('deleteRoom', function () {
-        // global.emit('deleteRoom', username);
         rooms[username].broadcast('cancelRoom');
+        rooms[username].destroy();
         delete rooms[username];
         global.emit('roomList', { rooms: roomList(rooms) });
     });
