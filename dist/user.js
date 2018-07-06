@@ -215,9 +215,8 @@ function userApis(app, db) {
         }))
     });
     app.post('/api/image/:token', upload.single('image'), function (req, res) {
-        var room = room_1.rooms[req.body.user];
-        var socket = room_1.rooms[req.body.user].members
-            .find(function (s) { return s.username === room.master; });
+        var room = room_1.rooms[req.body.user.username];
+        var socket = room.members.find(function (s) { return s.username === room.master; });
         if (socket)
             room.broadcast('image', '', socket);
         res.json({ status: 1 });

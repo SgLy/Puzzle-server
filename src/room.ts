@@ -104,7 +104,6 @@ interface Rooms {
   [key: string]: Room
 };
 export const rooms: Rooms = {};
-const gamingRooms: Rooms = {};
 const roomList = (rooms: Rooms) =>
   Object.values(rooms)
     .filter(r => !r.gaming)
@@ -143,7 +142,6 @@ export function makeRoomClient(
   socket.on('startGame', () => {
     rooms[username].broadcast('startGame');
     gameRoom(rooms[username]);
-    gamingRooms[username] = rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('deleteRoom', () => {

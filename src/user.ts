@@ -133,9 +133,8 @@ export function userApis(app: express.Express, db: Db): void {
     }))
   });
   app.post('/api/image/:token', upload.single('image'), (req, res) => {
-    const room = rooms[req.body.user];
-    const socket = rooms[req.body.user].members
-      .find(s => s.username === room.master);
+    const room = rooms[req.body.user.username];
+    const socket = room.members.find(s => s.username === room.master);
     if (socket)
       room.broadcast('image', '', socket);
     res.json({ status: 1 });

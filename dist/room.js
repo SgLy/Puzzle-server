@@ -113,7 +113,6 @@ var Room = /** @class */ (function () {
 exports.Room = Room;
 ;
 exports.rooms = {};
-var gamingRooms = {};
 var roomList = function (rooms) {
     return Object.values(rooms)
         .filter(function (r) { return !r.gaming; })
@@ -150,7 +149,6 @@ function makeRoomClient(_socket, username, _global) {
     socket.on('startGame', function () {
         exports.rooms[username].broadcast('startGame');
         game_1.gameRoom(exports.rooms[username]);
-        gamingRooms[username] = exports.rooms[username];
         global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
     socket.on('deleteRoom', function () {
