@@ -209,7 +209,8 @@ function userApis(app, db) {
                     .findOne({ token: req.params.token })
                     .then(function (user) {
                     req.body.user = user;
-                    cb(null, "" + user._id);
+                    console.log("[NEW IMAGE] " + user._id);
+                    cb(null, user._id);
                 });
             }
         }))
@@ -238,9 +239,8 @@ function userApis(app, db) {
                 case 3:
                     master = _a.sent();
                     path = path_1.join('.', 'static', 'images', master._id);
-                    res
-                        .contentType('image/jpeg')
-                        .sendFile(path);
+                    console.log("[SEND IMAGE] " + user.username + " " + master.username + " " + path);
+                    res.contentType('image/jpeg').sendFile(path);
                     _a.label = 4;
                 case 4: return [2 /*return*/];
             }

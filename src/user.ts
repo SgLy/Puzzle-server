@@ -127,7 +127,8 @@ export function userApis(app: express.Express, db: Db): void {
           .findOne({ token: req.params.token })
           .then(user => {
             req.body.user = user;
-            cb(null, `${user._id}`);
+            console.log(`[NEW IMAGE] ${user._id}`);
+            cb(null, user._id);
           });
       }
     }))
@@ -149,9 +150,8 @@ export function userApis(app: express.Express, db: Db): void {
       const master = await db.collection('user')
         .findOne({ username: room.master });
       const path = join('.', 'static', 'images', master._id);
-      res
-        .contentType('image/jpeg')
-        .sendFile(path);
+      console.log(`[SEND IMAGE] ${user.username} ${master.username} ${path}`);
+      res.contentType('image/jpeg').sendFile(path);
     }
   });
 }
