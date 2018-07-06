@@ -40,12 +40,6 @@ var express = require("express");
 var app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-var cors = require('cors');
-app.use(cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-    optionsSuccessStatus: 204
-}));
 app.use(function (req, res, next) {
     console.log("[" + (new Date()).toISOString() + "] " + req.method + " " + req.originalUrl);
     if (req.method === 'GET')
@@ -85,20 +79,26 @@ var mongodb_1 = require("mongodb");
 var user_1 = require("./user");
 var db;
 (function () { return __awaiter(_this, void 0, void 0, function () {
-    var dbName, url, client, err_1, PORT;
+    var DATABASE, PROTO, USERNAME, PASSWORD, IP, DB_PORT, URL, client, err_1, PORT;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
-                dbName = 'puzzle';
-                url = 'mongodb://localhost:27017';
+                DATABASE = 'puzzle';
+                PROTO = 'mongodb';
+                USERNAME = 'puzzle';
+                PASSWORD = 'puzzlePassword123456!';
+                IP = '45.77.183.226';
+                DB_PORT = 27017;
+                URL = PROTO + "://" + USERNAME + ":" + PASSWORD + "@" + IP + ":" + DB_PORT + "/puzzle";
+                console.log(URL);
                 _a.label = 1;
             case 1:
                 _a.trys.push([1, 3, , 4]);
-                return [4 /*yield*/, mongodb_1.MongoClient.connect(url)];
+                return [4 /*yield*/, mongodb_1.MongoClient.connect(URL)];
             case 2:
                 client = _a.sent();
                 console.log('Connected to MongoDB');
-                db = client.db(dbName);
+                db = client.db(DATABASE);
                 user_1.userApis(app, db);
                 return [3 /*break*/, 4];
             case 3:

@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 function gameRoom(room) {
+    room.gaming = true;
     room.members.forEach(function (s) {
         var username = s.username;
         s.on('pickPiece', function (pieceIndex) {

@@ -2,12 +2,6 @@ import * as express from 'express';
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-const cors = require('cors');
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true,
-  optionsSuccessStatus: 204
-}));
 
 app.use((req, res, next) => {
   console.log(`[${(new Date()).toISOString()}] ${req.method} ${req.originalUrl}`);
@@ -40,16 +34,22 @@ app.get('/', (req, res) => {
   res.send('Puzzle app API');
 });
 
-import { MongoClient, Db } from 'mongodb';
+import { MongoClient, Db, MongoClientOptions } from 'mongodb';
 import { userApis } from './user';
 let db: Db;
 (async () => {
-  const dbName = 'puzzle';
-  const url = 'mongodb://localhost:27017';
+  const DATABASE = 'puzzle';
+  const PROTO = 'mongodb';
+  const USERNAME = 'puzzle';
+  const PASSWORD = 'puzzlePassword123456!';
+  const IP = '45.77.183.226';
+  const DB_PORT = 27017;
+  const URL = `${PROTO}://${USERNAME}:${PASSWORD}@${IP}:${DB_PORT}/puzzle`;
+  console.log(URL);
   try {
-    let client = await MongoClient.connect(url);
+    let client = await MongoClient.connect(URL);
     console.log('Connected to MongoDB');
-    db = client.db(dbName);
+    db = client.db(DATABASE);
     userApis(app, db);
   } catch (err) {
     console.log(err.stack);

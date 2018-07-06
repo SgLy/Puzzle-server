@@ -45,11 +45,13 @@ export class Room {
   public members: Socket[];
   public split: number;
   public pattern: number;
+  public gaming: boolean;
   constructor(master: string, pattern: number, split: number) {
     this.master = master;
     this.pattern = pattern;
     this.split = split;
     this.members = [];
+    this.gaming = false;
   }
 
   addMember(s: Socket) {
@@ -102,8 +104,11 @@ interface Rooms {
   [key: string]: Room
 };
 export const rooms: Rooms = {};
+const gamingRooms: Rooms = {};
 const roomList = (rooms: Rooms) =>
-  Object.values(rooms).map(room => room.detail);
+  Object.values(rooms)
+    .filter(r => !r.gaming)
+    .map(room => room.detail);
 
 export function makeRoomClient(
   _socket: socketio.Socket, username: string, _global: socketio.Server
@@ -138,14 +143,12 @@ export function makeRoomClient(
   socket.on('startGame', () => {
     rooms[username].broadcast('startGame');
     gameRoom(rooms[username]);
-    rooms[username].destroy();
-    delete rooms[username];
+    gamingRooms[username] = rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('deleteRoom', () => {
     rooms[username].broadcast('cancelRoom');
     rooms[username].destroy();
-    delete rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });
 }

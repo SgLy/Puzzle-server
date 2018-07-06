@@ -2,6 +2,7 @@ import * as socketio from 'socket.io';
 import { Room } from './room';
 
 export function gameRoom(room: Room) {
+  room.gaming = true;
   room.members.forEach(s => {
     const username = s.username;
     s.on('pickPiece', pieceIndex => {
