@@ -80,7 +80,7 @@ var Room = /** @class */ (function () {
         });
     };
     Room.prototype.contain = function (username) {
-        return this.members.findIndex(function (s) { return s.username === username; }) === -1;
+        return this.members.findIndex(function (s) { return s.username === username; }) !== -1;
     };
     Object.defineProperty(Room.prototype, "memberList", {
         get: function () {

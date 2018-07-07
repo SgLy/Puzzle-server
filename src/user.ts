@@ -128,7 +128,7 @@ export function userApis(app: express.Express, db: Db): void {
           .then(user => {
             req.body.user = user;
             console.log(`[NEW IMAGE] ${user._id}`);
-            cb(null, user._id);
+            cb(null, user._id.toString());
           });
       }
     }))
@@ -144,12 +144,13 @@ export function userApis(app: express.Express, db: Db): void {
     const user = await db.collection('user')
       .findOne({ token: req.params.token });
     const room = Object.values(rooms).find(r => r.contain(user.username));
-    if (room === undefined)
+    if (room === undefined) {
+      console.log(`[ERR] ${user.username} Not in any room`);
       res.send('');
-    else {
+    } else {
       const master = await db.collection('user')
         .findOne({ username: room.master });
-      const path = join('.', 'static', 'images', master._id);
+      const path = join(__dirname, '..', 'static', 'images', master._id.toString());
       console.log(`[SEND IMAGE] ${user.username} ${master.username} ${path}`);
       res.contentType('image/jpeg').sendFile(path);
     }

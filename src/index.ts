@@ -45,7 +45,6 @@ let db: Db;
   const IP = '45.77.183.226';
   const DB_PORT = 27017;
   const URL = `${PROTO}://${USERNAME}:${PASSWORD}@${IP}:${DB_PORT}/puzzle`;
-  console.log(URL);
   try {
     let client = await MongoClient.connect(URL);
     console.log('Connected to MongoDB');

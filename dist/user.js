@@ -210,7 +210,7 @@ function userApis(app, db) {
                     .then(function (user) {
                     req.body.user = user;
                     console.log("[NEW IMAGE] " + user._id);
-                    cb(null, user._id);
+                    cb(null, user._id.toString());
                 });
             }
         }))
@@ -232,13 +232,14 @@ function userApis(app, db) {
                     user = _a.sent();
                     room = Object.values(room_1.rooms).find(function (r) { return r.contain(user.username); });
                     if (!(room === undefined)) return [3 /*break*/, 2];
+                    console.log("[ERR] " + user.username + " Not in any room");
                     res.send('');
                     return [3 /*break*/, 4];
                 case 2: return [4 /*yield*/, db.collection('user')
                         .findOne({ username: room.master })];
                 case 3:
                     master = _a.sent();
-                    path = path_1.join('.', 'static', 'images', master._id);
+                    path = path_1.join(__dirname, '..', 'static', 'images', master._id.toString());
                     console.log("[SEND IMAGE] " + user.username + " " + master.username + " " + path);
                     res.contentType('image/jpeg').sendFile(path);
                     _a.label = 4;

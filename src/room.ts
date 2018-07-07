@@ -79,7 +79,7 @@ export class Room {
   }
 
   contain(username: string) {
-    return this.members.findIndex(s => s.username === username) === -1;
+    return this.members.findIndex(s => s.username === username) !== -1;
   }
 
   get memberList() {
