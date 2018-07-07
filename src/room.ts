@@ -55,6 +55,8 @@ export class Room {
   }
 
   addMember(s: Socket) {
+    if (this.contain(s.username))
+      return;
     this.members.push(s);
     s.currentRoom = this;
   }
@@ -147,6 +149,7 @@ export function makeRoomClient(
   socket.on('deleteRoom', () => {
     rooms[username].broadcast('cancelRoom');
     rooms[username].destroy();
+    delete rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });
 }

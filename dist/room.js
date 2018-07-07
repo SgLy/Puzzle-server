@@ -60,6 +60,8 @@ var Room = /** @class */ (function () {
         this.gaming = false;
     }
     Room.prototype.addMember = function (s) {
+        if (this.contain(s.username))
+            return;
         this.members.push(s);
         s.currentRoom = this;
     };
@@ -154,6 +156,7 @@ function makeRoomClient(_socket, username, _global) {
     socket.on('deleteRoom', function () {
         exports.rooms[username].broadcast('cancelRoom');
         exports.rooms[username].destroy();
+        delete exports.rooms[username];
         global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
 }
