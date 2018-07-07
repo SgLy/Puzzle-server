@@ -36,9 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 var uuid = require("uuid/v1");
-var multer = require("multer");
 var room_1 = require("./room");
-var path_1 = require("path");
 var SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 function userApis(app, db) {
     var _this = this;
@@ -199,52 +197,34 @@ function userApis(app, db) {
             }
         });
     }); });
-    var upload = multer({
-        storage: multer.diskStorage(({
-            destination: function (req, file, cb) {
-                cb(null, 'static/images');
-            },
-            filename: function (req, file, cb) {
-                db.collection('user')
-                    .findOne({ token: req.params.token })
-                    .then(function (user) {
-                    req.body.user = user;
-                    console.log("[NEW IMAGE] " + user._id);
-                    cb(null, user._id.toString());
-                });
-            }
-        }))
-    });
-    app.post('/api/image/:token', upload.single('image'), function (req, res) {
+    app.post('/api/gameParam', loginRequired, function (req, res) {
         var room = room_1.rooms[req.body.user.username];
+        room.gameParam.image = req.body.data.image;
+        room.gameParam.sequence = req.body.data.sequence;
         var socket = room.members.find(function (s) { return s.username === room.master; });
         if (socket)
-            room.broadcast('image', '', socket);
+            room.broadcast('gameParam', undefined, socket);
         res.json({ status: 1 });
     });
-    app.get('/api/image/:token', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-        var user, room, master, path;
+    app.get('/api/gameParam', loginRequired, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+        var username, room;
         return __generator(this, function (_a) {
-            switch (_a.label) {
-                case 0: return [4 /*yield*/, db.collection('user')
-                        .findOne({ token: req.params.token })];
-                case 1:
-                    user = _a.sent();
-                    room = Object.values(room_1.rooms).find(function (r) { return r.contain(user.username); });
-                    if (!(room === undefined)) return [3 /*break*/, 2];
-                    console.log("[ERR] " + user.username + " Not in any room");
-                    res.send('');
-                    return [3 /*break*/, 4];
-                case 2: return [4 /*yield*/, db.collection('user')
-                        .findOne({ username: room.master })];
-                case 3:
-                    master = _a.sent();
-                    path = path_1.join(__dirname, '..', 'static', 'images', master._id.toString());
-                    console.log("[SEND IMAGE] " + user.username + " " + master.username + " " + path);
-                    res.contentType('image/jpeg').sendFile(path);
-                    _a.label = 4;
-                case 4: return [2 /*return*/];
+            username = req.body.user.username;
+            room = Object.values(room_1.rooms).find(function (r) { return r.contain(username); });
+            if (room === undefined) {
+                console.log("[ERR] " + username + " Not in any room");
+                res.send('');
             }
+            else {
+                res.json({
+                    status: 1,
+                    split: room.gameParam.split,
+                    pattern: room.gameParam.pattern,
+                    sequence: room.gameParam.sequence,
+                    _imageBase64: room.gameParam.image
+                });
+            }
+            return [2 /*return*/];
         });
     }); });
 }

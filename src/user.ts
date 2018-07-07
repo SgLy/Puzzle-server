@@ -1,7 +1,6 @@
 import * as express from 'express';
 import { MongoClient, Db } from 'mongodb';
 import * as uuid from 'uuid/v1';
-import * as multer from 'multer';
 import { rooms } from './room';
 import { join } from 'path';
 const SORT_ASCENDING = 1, SORT_DESCENDING = -1;
@@ -117,42 +116,29 @@ export function userApis(app: express.Express, db: Db): void {
     }
   });
 
-  const upload = multer({
-    storage: multer.diskStorage(({
-      destination: function (req, file, cb) {
-        cb(null, 'static/images');
-      },
-      filename: function (req: express.Request, file, cb) {
-        db.collection('user')
-          .findOne({ token: req.params.token })
-          .then(user => {
-            req.body.user = user;
-            console.log(`[NEW IMAGE] ${user._id}`);
-            cb(null, user._id.toString());
-          });
-      }
-    }))
-  });
-  app.post('/api/image/:token', upload.single('image'), (req, res) => {
+  app.post('/api/gameParam', loginRequired, (req, res) => {
     const room = rooms[req.body.user.username];
+    room.gameParam.image = req.body.data.image;
+    room.gameParam.sequence = req.body.data.sequence;
     const socket = room.members.find(s => s.username === room.master);
     if (socket)
-      room.broadcast('image', '', socket);
+      room.broadcast('gameParam', undefined, socket);
     res.json({ status: 1 });
   });
-  app.get('/api/image/:token', async (req, res) => {
-    const user = await db.collection('user')
-      .findOne({ token: req.params.token });
-    const room = Object.values(rooms).find(r => r.contain(user.username));
+  app.get('/api/gameParam', loginRequired, async (req, res) => {
+    const username = req.body.user.username;
+    const room = Object.values(rooms).find(r => r.contain(username));
     if (room === undefined) {
-      console.log(`[ERR] ${user.username} Not in any room`);
+      console.log(`[ERR] ${username} Not in any room`);
       res.send('');
     } else {
-      const master = await db.collection('user')
-        .findOne({ username: room.master });
-      const path = join(__dirname, '..', 'static', 'images', master._id.toString());
-      console.log(`[SEND IMAGE] ${user.username} ${master.username} ${path}`);
-      res.contentType('image/jpeg').sendFile(path);
+      res.json({
+        status: 1,
+        split: room.gameParam.split,
+        pattern: room.gameParam.pattern,
+        sequence: room.gameParam.sequence,
+        _imageBase64: room.gameParam.image
+      });
     }
   });
 }

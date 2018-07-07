@@ -54,8 +54,7 @@ var SocketGlobal = /** @class */ (function () {
 var Room = /** @class */ (function () {
     function Room(master, pattern, split) {
         this.master = master;
-        this.pattern = pattern;
-        this.split = split;
+        this.gameParam = { pattern: pattern, split: split, sequence: undefined, image: undefined };
         this.members = [];
         this.gaming = false;
     }
@@ -103,8 +102,8 @@ var Room = /** @class */ (function () {
             return {
                 username: this.master,
                 size: this.size,
-                pattern: this.pattern,
-                split: this.split
+                pattern: this.gameParam.pattern,
+                split: this.gameParam.split
             };
         },
         enumerable: true,

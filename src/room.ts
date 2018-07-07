@@ -43,13 +43,16 @@ class SocketGlobal {
 export class Room {
   public master: string;
   public members: Socket[];
-  public split: number;
-  public pattern: number;
+  public gameParam: {
+    split: number,
+    pattern: number,
+    sequence: number[] | undefined,
+    image: string | undefined
+  };
   public gaming: boolean;
   constructor(master: string, pattern: number, split: number) {
     this.master = master;
-    this.pattern = pattern;
-    this.split = split;
+    this.gameParam = { pattern, split, sequence: undefined, image: undefined };
     this.members = [];
     this.gaming = false;
   }
@@ -96,8 +99,8 @@ export class Room {
     return {
       username: this.master,
       size: this.size,
-      pattern: this.pattern,
-      split: this.split
+      pattern: this.gameParam.pattern,
+      split: this.gameParam.split
     }
   }
 }
