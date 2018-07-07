@@ -7,9 +7,9 @@ function gameRoom(room) {
         s.on('pickPiece', function (pieceIndex) {
             room.broadcast('pickPiece', { pieceIndex: pieceIndex, username: username }, s);
         });
-        s.on('moveTo', function (data) {
+        s.on('movePieceTo', function (data) {
             var X = data.X, Y = data.Y;
-            room.broadcast('moveTo', { X: X, Y: Y, username: username }, s);
+            room.broadcast('movePieceTo', { X: X, Y: Y, username: username }, s);
         });
         s.on('releasePiece', function () {
             room.broadcast('releasePiece', { username: username }, s);

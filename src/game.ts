@@ -8,9 +8,9 @@ export function gameRoom(room: Room) {
     s.on('pickPiece', pieceIndex => {
       room.broadcast('pickPiece', { pieceIndex, username }, s);
     });
-    s.on('moveTo', data => {
+    s.on('movePieceTo', data => {
       const { X, Y } = data;
-      room.broadcast('moveTo', { X, Y, username }, s);
+      room.broadcast('movePieceTo', { X, Y, username }, s);
     });
     s.on('releasePiece', () => {
       room.broadcast('releasePiece', { username }, s);
