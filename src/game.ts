@@ -6,17 +6,22 @@ export function gameRoom(room: Room) {
   room.members.forEach(s => {
     const username = s.username;
     s.on('pickPiece', pieceIndex => {
+      room.pieces[username] = parseInt(pieceIndex);
       room.broadcast('pickPiece', { pieceIndex, username }, s);
     });
     s.on('movePieceTo', data => {
       const { X, Y } = data;
-      room.broadcast('movePieceTo', { X, Y, username }, s);
+      const pieceIndex = room.pieces[username];
+      room.broadcast('movePieceTo', { X, Y, username, pieceIndex }, s);
     });
     s.on('rotatePiece', data => {
-      room.broadcast('rotatePiece', { username }, s);
+      const pieceIndex = room.pieces[username];
+      room.broadcast('rotatePiece', { username, pieceIndex }, s);
     })
     s.on('releasePiece', () => {
-      room.broadcast('releasePiece', { username }, s);
+      const pieceIndex = room.pieces[username];
+      delete room.pieces[username];
+      room.broadcast('releasePiece', { username, pieceIndex }, s);
     });
   });
 }

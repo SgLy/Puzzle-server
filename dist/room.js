@@ -56,6 +56,7 @@ var Room = /** @class */ (function () {
         this.master = master;
         this.gameParam = { pattern: pattern, split: split, sequence: undefined, image: undefined };
         this.members = [];
+        this.pieces = {};
         this.gaming = false;
     }
     Room.prototype.addMember = function (s) {

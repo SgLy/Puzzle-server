@@ -49,11 +49,13 @@ export class Room {
     sequence: number[] | undefined,
     image: string | undefined
   };
+  public pieces: { [key: string]: number }
   public gaming: boolean;
   constructor(master: string, pattern: number, split: number) {
     this.master = master;
     this.gameParam = { pattern, split, sequence: undefined, image: undefined };
     this.members = [];
+    this.pieces = {};
     this.gaming = false;
   }
 
