@@ -49,7 +49,6 @@ export class Room {
     sequence: number[] | undefined,
     image: string | undefined
   };
-  public pieces: { [key: string]: number }
   public gaming: boolean;
   constructor(master: string, pattern: number, split: number) {
     this.master = master;
