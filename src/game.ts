@@ -12,6 +12,9 @@ export function gameRoom(room: Room) {
       const { X, Y } = data;
       room.broadcast('movePieceTo', { X, Y, username }, s);
     });
+    s.on('rotatePiece', data => {
+      room.broadcast('rotatePiece', { username }, s);
+    })
     s.on('releasePiece', () => {
       room.broadcast('releasePiece', { username }, s);
     });
