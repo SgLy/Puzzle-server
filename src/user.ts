@@ -120,6 +120,7 @@ export function userApis(app: express.Express, db: Db): void {
     const room = rooms[req.body.user.username];
     room.gameParam.image = req.body.data.image;
     room.gameParam.sequence = req.body.data.sequence;
+    room.gameParam.rotation = req.body.data.rotation;
     const socket = room.members.find(s => s.username === room.master);
     if (socket)
       room.broadcast('gameParam', undefined, socket);
@@ -137,6 +138,7 @@ export function userApis(app: express.Express, db: Db): void {
         split: room.gameParam.split,
         pattern: room.gameParam.pattern,
         sequence: room.gameParam.sequence,
+        rotation: room.gameParam.rotation,
         _imageBase64: room.gameParam.image
       });
     }

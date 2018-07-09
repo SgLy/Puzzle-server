@@ -47,6 +47,7 @@ export class Room {
     split: number,
     pattern: number,
     sequence: number[] | undefined,
+    rotation: number[] | undefined,
     image: string | undefined
   };
   public gaming: boolean;

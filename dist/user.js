@@ -201,6 +201,7 @@ function userApis(app, db) {
         var room = room_1.rooms[req.body.user.username];
         room.gameParam.image = req.body.data.image;
         room.gameParam.sequence = req.body.data.sequence;
+        room.gameParam.rotation = req.body.data.rotation;
         var socket = room.members.find(function (s) { return s.username === room.master; });
         if (socket)
             room.broadcast('gameParam', undefined, socket);
@@ -221,6 +222,7 @@ function userApis(app, db) {
                     split: room.gameParam.split,
                     pattern: room.gameParam.pattern,
                     sequence: room.gameParam.sequence,
+                    rotation: room.gameParam.rotation,
                     _imageBase64: room.gameParam.image
                 });
             }
