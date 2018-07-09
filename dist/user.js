@@ -119,7 +119,7 @@ function userApis(app, db) {
             }
         });
     }); });
-    app.post('/api/result', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
+    app.post('/api/result', loginRequired, function (req, res) { return __awaiter(_this, void 0, void 0, function () {
         var _a, pattern, split, time, timestamp, r, err_3;
         return __generator(this, function (_b) {
             switch (_b.label) {
@@ -140,7 +140,7 @@ function userApis(app, db) {
                     return [3 /*break*/, 3];
                 case 2:
                     err_3 = _b.sent();
-                    console.log(err_3.errmsg);
+                    console.log(err_3);
                     res.json({ status: -1 });
                     return [3 /*break*/, 3];
                 case 3: return [2 /*return*/];

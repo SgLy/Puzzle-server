@@ -55,7 +55,7 @@ export function userApis(app: express.Express, db: Db): void {
     }
   });
   
-  app.post('/api/result', async (req, res) => {
+  app.post('/api/result', loginRequired, async (req, res) => {
     try {
       let { pattern, split, time, timestamp } = req.body.data;
       timestamp = parseInt(timestamp);
@@ -68,7 +68,7 @@ export function userApis(app: express.Express, db: Db): void {
       });
       res.json({ status: r.result.ok });
     } catch (err) {
-      console.log(err.errmsg);
+      console.log(err);
       res.json({ status: -1 });
     }
   });

@@ -54,7 +54,6 @@ export class Room {
     this.master = master;
     this.gameParam = { pattern, split, sequence: undefined, image: undefined };
     this.members = [];
-    this.pieces = {};
     this.gaming = false;
   }
 
