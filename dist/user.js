@@ -120,17 +120,17 @@ function userApis(app, db) {
         });
     }); });
     app.post('/api/result', function (req, res) { return __awaiter(_this, void 0, void 0, function () {
-        var _a, pattern, time, timestamp, r, err_3;
+        var _a, pattern, split, time, timestamp, r, err_3;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
                     _b.trys.push([0, 2, , 3]);
-                    _a = req.body.data, pattern = _a.pattern, time = _a.time, timestamp = _a.timestamp;
+                    _a = req.body.data, pattern = _a.pattern, split = _a.split, time = _a.time, timestamp = _a.timestamp;
                     timestamp = parseInt(timestamp);
                     if (timestamp < 1e12)
                         timestamp *= 1e3;
                     return [4 /*yield*/, db.collection('result').insertOne({
-                            pattern: pattern, time: time,
+                            pattern: pattern, split: split, time: time,
                             timestamp: new Date(timestamp),
                             username: req.body.user.username
                         })];

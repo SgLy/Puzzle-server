@@ -57,12 +57,12 @@ export function userApis(app: express.Express, db: Db): void {
   
   app.post('/api/result', async (req, res) => {
     try {
-      let { pattern, time, timestamp } = req.body.data;
+      let { pattern, split, time, timestamp } = req.body.data;
       timestamp = parseInt(timestamp);
       if (timestamp < 1e12)
       timestamp *= 1e3;
       const r = await db.collection('result').insertOne({
-        pattern, time,
+        pattern, split, time,
         timestamp: new Date(timestamp),
         username: req.body.user.username
       });
