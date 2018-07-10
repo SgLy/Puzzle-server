@@ -87,7 +87,7 @@ var db;
                 PROTO = 'mongodb';
                 USERNAME = 'puzzle';
                 PASSWORD = 'puzzlePassword123456!';
-                IP = '45.77.183.226';
+                IP = '39.108.99.67';
                 DB_PORT = 27017;
                 URL = PROTO + "://" + USERNAME + ":" + PASSWORD + "@" + IP + ":" + DB_PORT + "/puzzle";
                 _a.label = 1;

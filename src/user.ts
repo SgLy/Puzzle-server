@@ -1,8 +1,7 @@
 import * as express from 'express';
-import { MongoClient, Db } from 'mongodb';
+import { Db } from 'mongodb';
 import * as uuid from 'uuid/v1';
 import { rooms } from './room';
-import { join } from 'path';
 const SORT_ASCENDING = 1, SORT_DESCENDING = -1;
 
 export function userApis(app: express.Express, db: Db): void {

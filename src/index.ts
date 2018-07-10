@@ -42,7 +42,7 @@ let db: Db;
   const PROTO = 'mongodb';
   const USERNAME = 'puzzle';
   const PASSWORD = 'puzzlePassword123456!';
-  const IP = '45.77.183.226';
+  const IP = '39.108.99.67';
   const DB_PORT = 27017;
   const URL = `${PROTO}://${USERNAME}:${PASSWORD}@${IP}:${DB_PORT}/puzzle`;
   try {
