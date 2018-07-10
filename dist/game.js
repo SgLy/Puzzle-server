@@ -11,8 +11,9 @@ function gameRoom(room) {
             var X = data.X, Y = data.Y;
             room.broadcast('movePieceTo', { X: X, Y: Y, username: username }, s);
         });
-        s.on('rotatePiece', function (pieceIndex) {
-            room.broadcast('rotatePiece', { username: username, pieceIndex: pieceIndex }, s);
+        s.on('rotatePiece', function (data) {
+            var pieceIndex = data.pieceIndex, angle = data.angle;
+            room.broadcast('rotatePiece', { username: username, pieceIndex: pieceIndex, angle: angle }, s);
         });
         s.on('releasePiece', function () {
             room.broadcast('releasePiece', { username: username }, s);
