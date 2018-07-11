@@ -19,7 +19,10 @@ var Socket = /** @class */ (function () {
     };
     Socket.prototype.on = function (event, listener) {
         var _this = this;
-        this.socket.off(event);
+        this.socket.listeners(event).forEach(function (f) {
+            // @ts-ignore
+            _this.socket.removeListener(event, f);
+        });
         this.socket.on(event, function () {
             var args = [];
             for (var _i = 0; _i < arguments.length; _i++) {

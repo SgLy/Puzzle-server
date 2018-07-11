@@ -18,7 +18,10 @@ export class Socket {
   }
 
   on(event: string, listener: (...args: any[]) => void) {
-    this.socket.removeAllListeners(event);
+    this.socket.listeners(event).forEach(f => {
+      // @ts-ignore
+      this.socket.removeListener(event, f);
+    });
     this.socket.on(event, (...args) => {
       const data = args.map(a => JSON.stringify(a)).join(';');
       const msg = `[${(new Date()).toISOString()}] ON ${this.username} ${event} ${data}`;
