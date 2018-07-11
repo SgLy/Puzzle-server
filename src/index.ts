@@ -1,5 +1,7 @@
 import * as express from 'express';
+import * as compression from 'compression';
 const app = express();
+app.use(compression());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true }));
 
