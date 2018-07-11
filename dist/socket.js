@@ -11,8 +11,9 @@ var Socket = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var data = args.map(function (a) { return JSON.stringify(a).slice(0, 20); }).join(';');
-        console.log("[" + (new Date()).toISOString() + "] [EMIT] " + this.username + " " + event + " " + data);
+        var data = args.map(function (a) { return JSON.stringify(a); }).join(';');
+        var msg = "[" + (new Date()).toISOString() + "] [EMIT] " + this.username + " " + event + " " + data;
+        console.log(msg);
         (_a = this.socket).emit.apply(_a, [event].concat(args));
         var _a;
     };
@@ -23,8 +24,9 @@ var Socket = /** @class */ (function () {
             for (var _i = 0; _i < arguments.length; _i++) {
                 args[_i] = arguments[_i];
             }
-            var data = args.map(function (a) { return JSON.stringify(a).slice(0, 20); }).join(';');
-            console.log("[" + (new Date()).toISOString() + "] ON " + _this.username + " " + event + " " + data);
+            var data = args.map(function (a) { return JSON.stringify(a); }).join(';');
+            var msg = "[" + (new Date()).toISOString() + "] ON " + _this.username + " " + event + " " + data;
+            console.log(msg);
             listener.apply(void 0, args);
         });
     };
@@ -47,8 +49,9 @@ var SocketGlobal = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var data = args.map(function (a) { return JSON.stringify(a).slice(0, 20); }).join(';');
-        console.log("[" + (new Date()).toISOString() + "] EMIT GLOBAL " + event + " " + data);
+        var data = args.map(function (a) { return JSON.stringify(a); }).join(';');
+        var msg = "[" + (new Date()).toISOString() + "] EMIT GLOBAL " + event + " " + data;
+        console.log(msg);
         (_a = this.global).emit.apply(_a, [event].concat(args));
         var _a;
     };

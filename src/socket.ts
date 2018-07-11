@@ -11,15 +11,17 @@ export class Socket {
   }
 
   emit(event: string, ...args: any[]) {
-    const data = args.map(a => JSON.stringify(a).slice(0, 20)).join(';');
-    console.log(`[${(new Date()).toISOString()}] [EMIT] ${this.username} ${event} ${data}`);
+    const data = args.map(a => JSON.stringify(a)).join(';');
+    const msg = `[${(new Date()).toISOString()}] [EMIT] ${this.username} ${event} ${data}`;
+    console.log(msg);
     this.socket.emit(event, ...args);
   }
 
   on(event: string, listener: (...args: any[]) => void) {
     this.socket.on(event, (...args) => {
-      const data = args.map(a => JSON.stringify(a).slice(0, 20)).join(';');
-      console.log(`[${(new Date()).toISOString()}] ON ${this.username} ${event} ${data}`);
+      const data = args.map(a => JSON.stringify(a)).join(';');
+      const msg = `[${(new Date()).toISOString()}] ON ${this.username} ${event} ${data}`;
+      console.log(msg);
       listener(...args);
     });
   }
@@ -36,8 +38,9 @@ export class SocketGlobal {
   }
 
   emit(event: string, ...args: any[]) {
-    const data = args.map(a => JSON.stringify(a).slice(0, 20)).join(';');
-    console.log(`[${(new Date()).toISOString()}] EMIT GLOBAL ${event} ${data}`);
+    const data = args.map(a => JSON.stringify(a)).join(';');
+    const msg = `[${(new Date()).toISOString()}] EMIT GLOBAL ${event} ${data}`;
+    console.log(msg);
     this.global.emit(event, ...args);
   }
 }
