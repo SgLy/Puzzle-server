@@ -1,4 +1,3 @@
-import * as socketio from 'socket.io';
 import { Room } from './socket';
 
 export function gameRoom(room: Room) {

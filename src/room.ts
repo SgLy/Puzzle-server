@@ -15,13 +15,27 @@ export function makeRoomClient(
   const global = new SocketGlobal(_global);
   socket.on('newRoom', (params) => {
     const { split, pattern } = params;
+    if (rooms[username] !== undefined) {
+      rooms[username].destroy();
+      delete rooms[username];
+    }
+    Object.values(rooms)
+      .filter(r => r.contain(username))
+      .forEach(r => r.removeMember(socket));
     rooms[username] = new Room(username, pattern, split);
     rooms[username].addMember(socket);
     global.emit('roomList', { rooms: roomList(rooms) });
   });
   socket.on('enterRoom', master => {
-    if (socket.currentRoom !== undefined)
-      return;
+    if (socket.currentRoom !== undefined) {
+      if (rooms[username] !== undefined) {
+        rooms[username].destroy();
+        delete rooms[username];
+      } else
+        Object.values(rooms)
+          .filter(r => r.contain(username))
+          .forEach(r => r.removeMember(socket));
+    }
     const room = rooms[master];
     room.addMember(socket);
     room.broadcast('roomMember', { members: room.memberList });

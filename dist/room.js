@@ -13,13 +13,28 @@ function makeRoomClient(_socket, username, _global) {
     var global = new socket_1.SocketGlobal(_global);
     socket.on('newRoom', function (params) {
         var split = params.split, pattern = params.pattern;
+        if (exports.rooms[username] !== undefined) {
+            exports.rooms[username].destroy();
+            delete exports.rooms[username];
+        }
+        Object.values(exports.rooms)
+            .filter(function (r) { return r.contain(username); })
+            .forEach(function (r) { return r.removeMember(socket); });
         exports.rooms[username] = new socket_1.Room(username, pattern, split);
         exports.rooms[username].addMember(socket);
         global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
     socket.on('enterRoom', function (master) {
-        if (socket.currentRoom !== undefined)
-            return;
+        if (socket.currentRoom !== undefined) {
+            if (exports.rooms[username] !== undefined) {
+                exports.rooms[username].destroy();
+                delete exports.rooms[username];
+            }
+            else
+                Object.values(exports.rooms)
+                    .filter(function (r) { return r.contain(username); })
+                    .forEach(function (r) { return r.removeMember(socket); });
+        }
         var room = exports.rooms[master];
         room.addMember(socket);
         room.broadcast('roomMember', { members: room.memberList });
