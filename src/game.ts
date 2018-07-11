@@ -1,5 +1,5 @@
 import * as socketio from 'socket.io';
-import { Room } from './room';
+import { Room } from './socket';
 
 export function gameRoom(room: Room) {
   room.gaming = true;
