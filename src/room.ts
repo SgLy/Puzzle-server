@@ -49,4 +49,12 @@ export function makeRoomClient(
     delete rooms[username];
     global.emit('roomList', { rooms: roomList(rooms) });
   });
+  socket.on('disconnect', () => {
+    if (socket.currentRoom === undefined)
+      return;
+    const room = socket.currentRoom;
+    room.removeMember(socket);
+    global.emit('roomList', { rooms: roomList(rooms) });
+    room.broadcast('roomMember', { members: room.memberList });
+  })
 }

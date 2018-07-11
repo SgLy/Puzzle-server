@@ -47,5 +47,13 @@ function makeRoomClient(_socket, username, _global) {
         delete exports.rooms[username];
         global.emit('roomList', { rooms: roomList(exports.rooms) });
     });
+    socket.on('disconnect', function () {
+        if (socket.currentRoom === undefined)
+            return;
+        var room = socket.currentRoom;
+        room.removeMember(socket);
+        global.emit('roomList', { rooms: roomList(exports.rooms) });
+        room.broadcast('roomMember', { members: room.memberList });
+    });
 }
 exports.makeRoomClient = makeRoomClient;
